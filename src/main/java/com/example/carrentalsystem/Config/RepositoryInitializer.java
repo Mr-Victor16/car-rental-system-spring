@@ -48,7 +48,6 @@ public class RepositoryInitializer {
             if(roleRepository.findAll().isEmpty()){
                 roleRepository.save(new Role(ERole.ROLE_ADMIN));
                 roleRepository.save(new Role(ERole.ROLE_USER));
-                roleRepository.save(new Role(ERole.ROLE_MODERATOR));
             }
 
             if(brandRepository.findAll().isEmpty()){
