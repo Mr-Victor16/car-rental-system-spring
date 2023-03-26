@@ -1,9 +1,6 @@
 package com.example.carrentalsystem.Controllers;
 
-import com.example.carrentalsystem.Models.Brand;
-import com.example.carrentalsystem.Models.Car;
-import com.example.carrentalsystem.Models.CarModel;
-import com.example.carrentalsystem.Models.FuelType;
+import com.example.carrentalsystem.Models.*;
 import com.example.carrentalsystem.Payload.Request.AddCarRequest;
 import com.example.carrentalsystem.Repositories.*;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -26,14 +23,16 @@ public class CarController {
     private final CarModelRepository carModelRepository;
     private final FuelTypeRepository fuelTypeRepository;
     private final CarImageRepository carImageRepository;
+    private final UserRepository userRepository;
 
     public CarController(CarRepository carRepository, BrandRepository brandRepository, CarModelRepository carModelRepository,
-                         FuelTypeRepository fuelTypeRepository, CarImageRepository carImageRepository) {
+                         FuelTypeRepository fuelTypeRepository, CarImageRepository carImageRepository, UserRepository userRepository) {
         this.carRepository = carRepository;
         this.brandRepository = brandRepository;
         this.carModelRepository = carModelRepository;
         this.fuelTypeRepository = fuelTypeRepository;
         this.carImageRepository = carImageRepository;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("available")
@@ -44,36 +43,40 @@ public class CarController {
     @Transactional
     @PostMapping("add")
     public ResponseEntity<?> addCar(@Valid @RequestBody AddCarRequest carRequest){
-        Brand brand;
-        if (brandRepository.findByName(carRequest.getBrand()) != null) {
-            brand = brandRepository.findByName(carRequest.getBrand());
+        if(userRepository.getByToken(carRequest.getToken()).getRoles().contains(ERole.ROLE_ADMIN)){
+            Brand brand;
+            if (brandRepository.findByName(carRequest.getBrand()) != null) {
+                brand = brandRepository.findByName(carRequest.getBrand());
+            } else {
+                brand = brandRepository.save(new Brand(carRequest.getBrand()));
+            }
+
+            CarModel model;
+            if (carModelRepository.findByName(carRequest.getModel()) != null) {
+                model = carModelRepository.findByName(carRequest.getModel());
+            } else {
+                model = carModelRepository.save(new CarModel(carRequest.getModel()));
+            }
+
+            FuelType fuelType = fuelTypeRepository.getById(carRequest.getFuelType());
+
+            carRepository.save(new Car(
+                    brand,
+                    model,
+                    carRequest.getYear(),
+                    carRequest.getMileage(),
+                    fuelType,
+                    carRequest.getHorsePower(),
+                    carRequest.getCapacity(),
+                    carRequest.getPrice(),
+                    true,
+                    carImageRepository.getByImageID(1)
+            ));
+
+            return ResponseEntity.ok(carRepository.findByAvailable(true));
         } else {
-            brand = brandRepository.save(new Brand(carRequest.getBrand()));
+            return (ResponseEntity<?>) ResponseEntity.badRequest();
         }
-
-        CarModel model;
-        if (carModelRepository.findByName(carRequest.getModel()) != null) {
-            model = carModelRepository.findByName(carRequest.getModel());
-        } else {
-            model = carModelRepository.save(new CarModel(carRequest.getModel()));
-        }
-
-        FuelType fuelType = fuelTypeRepository.getById(carRequest.getFuelType());
-
-        carRepository.save(new Car(
-                brand,
-                model,
-                carRequest.getYear(),
-                carRequest.getMileage(),
-                fuelType,
-                carRequest.getHorsePower(),
-                carRequest.getCapacity(),
-                carRequest.getPrice(),
-                true,
-                carImageRepository.getByImageID(1)
-        ));
-
-        return ResponseEntity.ok(carRepository.findByAvailable(true));
     }
 
     public static byte[] imageFromURLToByteArray(URL url) throws IOException {
