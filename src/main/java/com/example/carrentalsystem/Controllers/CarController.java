@@ -25,7 +25,8 @@ public class CarController {
     private final RoleRepository roleRepository;
 
     public CarController(CarRepository carRepository, BrandRepository brandRepository, CarModelRepository carModelRepository,
-                         FuelTypeRepository fuelTypeRepository, CarImageRepository carImageRepository, UserRepository userRepository, RoleRepository roleRepository) {
+                         FuelTypeRepository fuelTypeRepository, CarImageRepository carImageRepository, UserRepository userRepository,
+                         RoleRepository roleRepository) {
         this.carRepository = carRepository;
         this.brandRepository = brandRepository;
         this.carModelRepository = carModelRepository;
@@ -85,7 +86,7 @@ public class CarController {
                                             @Valid @RequestParam("carID") Integer carID,
                                             @Valid @RequestParam("token") String token) throws IOException {
 
-        if(userRepository.getByToken(token).getRoles().contains(roleRepository.findByName(ERole.ROLE_ADMIN).get())){
+        if(userRepository.getByToken(token).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             Car car = carRepository.getCarById(carID);
             Integer imageID = car.getCarImage().getImageID();
 
