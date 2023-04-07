@@ -18,15 +18,11 @@ public class CarImage {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer imageID;
 
-    @Column(name = "file_name", nullable = false)
-    private String fileName;
-
     @Lob
-    @Column(columnDefinition="BLOB", nullable = false)
+    @Column(nullable = false)
     private byte[] fileContent;
 
-    public CarImage(String fileName, byte[] fileContent) {
-        this.fileName = fileName;
+    public CarImage(byte[] fileContent) {
         this.fileContent = fileContent;
     }
 

@@ -59,7 +59,11 @@ public class RepositoryInitializer {
             }
 
             if(carRepository.findAll().isEmpty() && carImageRepository.findAll().isEmpty()){
-                carImageRepository.save(new CarImage("1.png",imageFromURLToByteArray(new URL("https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"))));
+                carImageRepository.save(
+                        new CarImage(
+                                imageFromURLToByteArray(new URL("https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"))
+                        )
+                );
                 carRepository.save(
                         new Car(
                                 brandRepository.findByName("Audi"),
@@ -72,22 +76,6 @@ public class RepositoryInitializer {
                                 550,
                                 true,
                                 carImageRepository.getByImageID(1)
-                        )
-                );
-
-                carImageRepository.save(new CarImage("2.png",imageFromURLToByteArray(new URL("https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"))));
-                carRepository.save(
-                        new Car(
-                                brandRepository.findByName("Audi"),
-                                carModelRepository.findByName("A3"),
-                                2015,
-                                155000,
-                                fuelTypeRepository.findByName(EFuelType.FUEL_GASOLINE),
-                                250,
-                                "2.5",
-                                600,
-                                true,
-                                carImageRepository.getByImageID(2)
                         )
                 );
             }

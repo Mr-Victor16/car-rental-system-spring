@@ -2,17 +2,15 @@ package com.example.carrentalsystem.Controllers;
 
 import com.example.carrentalsystem.Models.*;
 import com.example.carrentalsystem.Payload.Request.AddCarRequest;
+import com.example.carrentalsystem.Payload.Response.MessageResponse;
 import com.example.carrentalsystem.Repositories.*;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -24,15 +22,17 @@ public class CarController {
     private final FuelTypeRepository fuelTypeRepository;
     private final CarImageRepository carImageRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     public CarController(CarRepository carRepository, BrandRepository brandRepository, CarModelRepository carModelRepository,
-                         FuelTypeRepository fuelTypeRepository, CarImageRepository carImageRepository, UserRepository userRepository) {
+                         FuelTypeRepository fuelTypeRepository, CarImageRepository carImageRepository, UserRepository userRepository, RoleRepository roleRepository) {
         this.carRepository = carRepository;
         this.brandRepository = brandRepository;
         this.carModelRepository = carModelRepository;
         this.fuelTypeRepository = fuelTypeRepository;
         this.carImageRepository = carImageRepository;
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
     }
 
     @GetMapping("available")
@@ -75,19 +75,28 @@ public class CarController {
 
             return ResponseEntity.ok(carRepository.findByAvailable(true));
         } else {
-            return (ResponseEntity<?>) ResponseEntity.badRequest();
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Bad token!"));
         }
     }
 
-    public static byte[] imageFromURLToByteArray(URL url) throws IOException {
-        URLConnection conn = url.openConnection();
-        conn.setConnectTimeout(5000);
-        conn.setReadTimeout(5000);
-        conn.connect();
+    @Transactional
+    @PostMapping("change-image")
+    public ResponseEntity<?> changeCarImage(@Valid @RequestParam("myFile") MultipartFile file,
+                                            @Valid @RequestParam("carID") Integer carID,
+                                            @Valid @RequestParam("token") String token) throws IOException {
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IOUtils.copy(conn.getInputStream(), baos);
+        if(userRepository.getByToken(token).getRoles().contains(roleRepository.findByName(ERole.ROLE_ADMIN).get())){
+            Car car = carRepository.getCarById(carID);
+            Integer imageID = car.getCarImage().getImageID();
 
-        return baos.toByteArray();
+            CarImage carImage = carImageRepository.save(new CarImage(file.getBytes()));
+            car.setCarImage(carImage);
+            carImageRepository.deleteById(imageID);
+            carRepository.save(car);
+
+            return ResponseEntity.ok(new MessageResponse("Success: Successfully changed car's image!"));
+        } else {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Bad token!"));
+        }
     }
 }
