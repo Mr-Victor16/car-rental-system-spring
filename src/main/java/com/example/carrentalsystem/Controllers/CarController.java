@@ -2,6 +2,8 @@ package com.example.carrentalsystem.Controllers;
 
 import com.example.carrentalsystem.Models.*;
 import com.example.carrentalsystem.Payload.Request.AddCarRequest;
+import com.example.carrentalsystem.Payload.Request.EditCarRequest;
+import com.example.carrentalsystem.Payload.Request.GetCarInfoRequest;
 import com.example.carrentalsystem.Payload.Response.MessageResponse;
 import com.example.carrentalsystem.Repositories.*;
 import org.springframework.http.ResponseEntity;
@@ -100,4 +102,87 @@ public class CarController {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Bad token!"));
         }
     }
+
+    @Transactional
+    @PostMapping("edit")
+    public ResponseEntity<?> editCar(@Valid @RequestBody EditCarRequest carRequest){
+        if(userRepository.getByToken(carRequest.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
+            Car car = carRepository.getCarById(carRequest.getId());
+            if(car != null){
+                if(!carRequest.getBrand().equals(car.getBrand().getName())){
+                    Brand brand = car.getBrand();
+                    if(brandRepository.findByName(carRequest.getBrand()) == null){
+                        car.setBrand(brandRepository.save(new Brand(carRequest.getBrand())));
+                    } else {
+                        car.setBrand(brandRepository.findByName(carRequest.getBrand()));
+                    }
+
+
+                    if(brandRepository.countByName(brand.getName()) == 1){
+                        brandRepository.deleteByName(brand.getName());
+                    }
+                }
+
+                if(!carRequest.getModel().equals(car.getModel().getName())){
+                    CarModel carModel = car.getModel();
+
+                    if(carModelRepository.findByName(carRequest.getModel()) == null){
+                        car.setModel(carModelRepository.save(new CarModel(carRequest.getModel())));
+                    } else {
+                        car.setModel(carModelRepository.findByName(carRequest.getModel()));
+                    }
+
+                    if(carModelRepository.countByName(carModel.getName()) == 1){
+                        carModelRepository.deleteByName(carModel.getName());
+                    }
+                }
+
+                if(carRequest.getCapacity() != car.getCapacity()){
+                    car.setCapacity(carRequest.getCapacity());
+                }
+
+                if(carRequest.getHorsePower() != car.getHorse_power()){
+                    car.setHorse_power(carRequest.getHorsePower());
+                }
+
+                if(carRequest.getYear() != car.getYear()){
+                    car.setYear(carRequest.getYear());
+                }
+
+                if(carRequest.getMileage() != car.getMileage()){
+                    car.setMileage(carRequest.getMileage());
+                }
+
+                if(carRequest.getPrice() != car.getPrice()){
+                    car.setPrice(carRequest.getPrice());
+                }
+
+                if(carRequest.getFuelType() != car.getFuelType().getId()){
+                    car.setFuelType(fuelTypeRepository.getById(carRequest.getFuelType()));
+                }
+
+                carRepository.save(car);
+                return ResponseEntity.ok(new MessageResponse("Success: Successfully changed car's informations!"));
+            } else {
+                return ResponseEntity.badRequest().body(new MessageResponse("Error: Car not found!"));
+            }
+        } else {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Bad token!"));
+        }
+    }
+
+    @PostMapping("get")
+    public ResponseEntity<?> getCar(@RequestBody GetCarInfoRequest request){
+        if(userRepository.getByToken(request.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
+            Car car = carRepository.getCarById(request.getId());
+            if(car != null){
+                return ResponseEntity.ok(car);
+            } else {
+                return ResponseEntity.badRequest().body(new MessageResponse("Error: Car not found!"));
+            }
+        } else {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Bad token!"));
+        }
+    }
+
 }
