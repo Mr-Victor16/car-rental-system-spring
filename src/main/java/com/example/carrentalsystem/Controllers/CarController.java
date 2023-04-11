@@ -137,27 +137,27 @@ public class CarController {
                     }
                 }
 
-                if(carRequest.getCapacity() != car.getCapacity()){
+                if(!carRequest.getCapacity().equals(car.getCapacity())){
                     car.setCapacity(carRequest.getCapacity());
                 }
 
-                if(carRequest.getHorsePower() != car.getHorse_power()){
+                if(!carRequest.getHorsePower().equals(car.getHorse_power())){
                     car.setHorse_power(carRequest.getHorsePower());
                 }
 
-                if(carRequest.getYear() != car.getYear()){
+                if(!carRequest.getYear().equals(car.getYear())){
                     car.setYear(carRequest.getYear());
                 }
 
-                if(carRequest.getMileage() != car.getMileage()){
+                if(!carRequest.getMileage().equals(car.getMileage())){
                     car.setMileage(carRequest.getMileage());
                 }
 
-                if(carRequest.getPrice() != car.getPrice()){
+                if(!carRequest.getPrice().equals(car.getPrice())){
                     car.setPrice(carRequest.getPrice());
                 }
 
-                if(carRequest.getFuelType() != car.getFuelType().getId()){
+                if(!carRequest.getFuelType().equals(car.getFuelType().getId())){
                     car.setFuelType(fuelTypeRepository.getById(carRequest.getFuelType()));
                 }
 
