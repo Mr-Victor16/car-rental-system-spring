@@ -14,24 +14,22 @@ import java.net.URLConnection;
 @Configuration
 public class RepositoryInitializer {
     private final FuelTypeRepository fuelTypeRepository;
-
     private final RoleRepository roleRepository;
-
     private final CarRepository carRepository;
-
     private final BrandRepository brandRepository;
-
     private final CarModelRepository carModelRepository;
-
     private final CarImageRepository carImageRepository;
+    private final RentalStatusRepository rentalStatusRepository;
 
-    public RepositoryInitializer(FuelTypeRepository fuelTypeRepository, RoleRepository roleRepository, CarRepository carRepository, BrandRepository brandRepository, CarModelRepository carModelRepository, CarImageRepository carImageRepository) {
+    public RepositoryInitializer(FuelTypeRepository fuelTypeRepository, RoleRepository roleRepository, CarRepository carRepository, BrandRepository brandRepository, CarModelRepository carModelRepository, CarImageRepository carImageRepository,
+                                 RentalStatusRepository rentalStatusRepository) {
         this.fuelTypeRepository = fuelTypeRepository;
         this.roleRepository = roleRepository;
         this.carRepository = carRepository;
         this.brandRepository = brandRepository;
         this.carModelRepository = carModelRepository;
         this.carImageRepository = carImageRepository;
+        this.rentalStatusRepository = rentalStatusRepository;
     }
 
     @Bean
@@ -43,6 +41,13 @@ public class RepositoryInitializer {
                 fuelTypeRepository.save(new FuelType(EFuelType.FUEL_LPG));
                 fuelTypeRepository.save(new FuelType(EFuelType.FUEL_ELECTRIC));
                 fuelTypeRepository.save(new FuelType(EFuelType.FUEL_HYBRID));
+            }
+
+            if(rentalStatusRepository.findAll().isEmpty()){
+                rentalStatusRepository.save(new RentalStatus(ERentalStatus.STATUS_ACCEPTED));
+                rentalStatusRepository.save(new RentalStatus(ERentalStatus.STATUS_CANCELLED));
+                rentalStatusRepository.save(new RentalStatus(ERentalStatus.STATUS_PENDING));
+                rentalStatusRepository.save(new RentalStatus(ERentalStatus.STATUS_REJECTED));
             }
 
             if(roleRepository.findAll().isEmpty()){
