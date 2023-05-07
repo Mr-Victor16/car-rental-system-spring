@@ -54,7 +54,7 @@ public class CarController {
 
     @Transactional
     @PostMapping("add")
-    public ResponseEntity<?> addCar(@Valid @RequestBody AddCarRequest carRequest){
+    public ResponseEntity<?> addCar(@RequestBody @Valid AddCarRequest carRequest){
         if(userRepository.getByToken(carRequest.getToken()).getRoles().contains(ERole.ROLE_ADMIN)){
             Brand brand;
             if (brandRepository.findByName(carRequest.getBrand()) != null) {
@@ -93,9 +93,9 @@ public class CarController {
 
     @Transactional
     @PostMapping("change-image")
-    public ResponseEntity<?> changeCarImage(@Valid @RequestParam("myFile") MultipartFile file,
-                                            @Valid @RequestParam("carID") Integer carID,
-                                            @Valid @RequestParam("token") String token) throws IOException {
+    public ResponseEntity<?> changeCarImage(@RequestParam("myFile") MultipartFile file,
+                                            @RequestParam("carID") Integer carID,
+                                            @RequestParam("token") String token) throws IOException {
 
         if(userRepository.getByToken(token).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             Car car = carRepository.getCarById(carID);
@@ -114,7 +114,7 @@ public class CarController {
 
     @Transactional
     @PostMapping("edit")
-    public ResponseEntity<?> editCar(@Valid @RequestBody EditCarRequest carRequest){
+    public ResponseEntity<?> editCar(@RequestBody @Valid EditCarRequest carRequest){
         if(userRepository.getByToken(carRequest.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             Car car = carRepository.getCarById(carRequest.getId());
             if(car != null){
@@ -180,7 +180,7 @@ public class CarController {
     }
 
     @GetMapping("get")
-    public ResponseEntity<?> getCar(@RequestBody GetCarInfoRequest request){
+    public ResponseEntity<?> getCar(@RequestBody @Valid GetCarInfoRequest request){
         if(userRepository.getByToken(request.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             Car car = carRepository.getCarById(request.getId());
             if(car != null){

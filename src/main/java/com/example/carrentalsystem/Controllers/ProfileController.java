@@ -24,7 +24,7 @@ public class ProfileController {
     }
 
     @PostMapping("change-password")
-    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest){
+    public ResponseEntity<?> changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest){
         if(userRepository.existsByToken(changePasswordRequest.getToken())) {
             User user = userRepository.getUserByToken(changePasswordRequest.getToken());
             user.setPassword(encoder.encode(changePasswordRequest.getNewPassword()));

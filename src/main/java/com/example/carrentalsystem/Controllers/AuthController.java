@@ -32,7 +32,7 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@RequestBody @Valid LoginRequest loginRequest) {
         if (userRepository.existsByUsername(loginRequest.getUsername())) {
             User user = userRepository.getUserByUsername(loginRequest.getUsername());
 
@@ -49,7 +49,8 @@ public class AuthController {
                         user.getUsername(),
                         user.getEmail(),
                         user.getToken(),
-                        roles));
+                        roles
+                ));
             } else {
                 return new ResponseEntity<>("Bad password", HttpStatus.FORBIDDEN);
             }
@@ -59,7 +60,7 @@ public class AuthController {
     }
 
     @PostMapping("signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest){
+    public ResponseEntity<?> registerUser(@RequestBody @Valid SignupRequest signUpRequest){
         if(userRepository.existsByUsername(signUpRequest.getUsername())){
             return new ResponseEntity<>("Username already in use", HttpStatus.CONFLICT);
         }

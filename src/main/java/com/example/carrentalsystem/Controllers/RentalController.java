@@ -30,7 +30,7 @@ public class RentalController {
     }
 
     @PostMapping("add")
-    public ResponseEntity<?> addRental(@Valid @RequestBody AddCarRentalRequest addCarRentalRequest){
+    public ResponseEntity<?> addRental(@RequestBody @Valid AddCarRentalRequest addCarRentalRequest){
         if(userRepository.existsByToken(addCarRentalRequest.getToken())) {
             Car car = carRepository.getCarById(addCarRentalRequest.getCarID());
 
@@ -51,7 +51,7 @@ public class RentalController {
     }
 
     @GetMapping("get/all")
-    public ResponseEntity<?> getAllRentals(@Valid @RequestBody String token){
+    public ResponseEntity<?> getAllRentals(@RequestBody String token){
         if(userRepository.getByToken(token).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             if(rentalRepository.findAll().size() > 0){
                 return ResponseEntity.ok(rentalRepository.findAll());
@@ -64,7 +64,7 @@ public class RentalController {
     }
 
     @GetMapping("get/user/{id}")
-    public ResponseEntity<?> getUserRentals(@Valid @RequestBody String token, @PathVariable("id") Long id){
+    public ResponseEntity<?> getUserRentals(@RequestBody String token, @PathVariable("id") Long id){
         if(userRepository.existsByToken(token)) {
             if(userRepository.existsById(id)){
                 if(rentalRepository.findByUser_Id(id).size() > 0){
@@ -81,7 +81,7 @@ public class RentalController {
     }
 
     @GetMapping("get/{id}")
-    public ResponseEntity<?> getRentalInfo(@Valid @RequestBody String token, @PathVariable("id") Long id){
+    public ResponseEntity<?> getRentalInfo(@RequestBody String token, @PathVariable("id") Long id){
         if(userRepository.existsByToken(token)) {
             if(rentalRepository.existsById(id)){
                 return ResponseEntity.ok(rentalRepository.findById(id));
@@ -94,7 +94,7 @@ public class RentalController {
     }
 
     @PostMapping("status/{statusID}/rental/{id}")
-    public ResponseEntity<?> changeStatus(@Valid @RequestBody String token, @PathVariable("statusID") Long statusID, @PathVariable("id") Long id){
+    public ResponseEntity<?> changeStatus(@RequestBody String token, @PathVariable("statusID") Long statusID, @PathVariable("id") Long id){
         if(userRepository.existsByToken(token)) {
             if(rentalRepository.existsById(id)){
                 if(rentalStatusRepository.existsById(statusID)){
@@ -115,7 +115,7 @@ public class RentalController {
     }
 
     @PostMapping("edit")
-    public ResponseEntity<?> changeRentalInformation(@Valid @RequestBody EditCarRentalRequest editCarRentalRequest){
+    public ResponseEntity<?> changeRentalInformation(@RequestBody @Valid EditCarRentalRequest editCarRentalRequest){
         if(userRepository.existsByToken(editCarRentalRequest.getToken())) {
             if(rentalRepository.existsById(editCarRentalRequest.getRentId())){
                 Rental rental = rentalRepository.getReferenceById(editCarRentalRequest.getRentId());
