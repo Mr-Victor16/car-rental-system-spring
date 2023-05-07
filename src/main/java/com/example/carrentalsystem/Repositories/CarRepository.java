@@ -9,4 +9,6 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     List<Car> findByAvailable(boolean available);
 
     Car getCarById(Integer carID);
+
+    Car findByMileage(Integer mileage);
 }

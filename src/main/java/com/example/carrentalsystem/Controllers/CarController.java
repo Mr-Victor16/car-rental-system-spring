@@ -43,6 +43,17 @@ public class CarController {
         return ResponseEntity.ok(carRepository.findByAvailable(true));
     }
 
+    @GetMapping("all")
+    public ResponseEntity<?> getAllCars(@RequestBody String token){
+        if(userRepository.existsByToken(token)) {
+            return ResponseEntity.ok(carRepository.findAll());
+        } else {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Bad token!"));
+        }
+    }
+
     @Transactional
     @PostMapping("add")
     public ResponseEntity<?> addCar(@Valid @RequestBody AddCarRequest carRequest){
@@ -117,7 +128,6 @@ public class CarController {
                         car.setBrand(brandRepository.findByName(carRequest.getBrand()));
                     }
 
-
                     if(brandRepository.countByName(brand.getName()) == 1){
                         brandRepository.deleteByName(brand.getName());
                     }
@@ -171,7 +181,7 @@ public class CarController {
         }
     }
 
-    @PostMapping("get")
+    @GetMapping("get")
     public ResponseEntity<?> getCar(@RequestBody GetCarInfoRequest request){
         if(userRepository.getByToken(request.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             Car car = carRepository.getCarById(request.getId());
