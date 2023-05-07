@@ -2,8 +2,8 @@ package com.example.carrentalsystem.Controllers;
 
 import com.example.carrentalsystem.Models.*;
 import com.example.carrentalsystem.Payload.Request.*;
-import com.example.carrentalsystem.Payload.Response.MessageResponse;
 import com.example.carrentalsystem.Repositories.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,11 +44,9 @@ public class RentalController {
                     rentalStatusRepository.findByName(ERentalStatus.STATUS_PENDING)
             ));
 
-            return ResponseEntity.ok(new MessageResponse("Success: Successfully added rental!"));
+            return new ResponseEntity<>("Rental added", HttpStatus.OK);
         } else {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Bad token!"));
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -59,11 +57,9 @@ public class RentalController {
                 return ResponseEntity.ok(rentalRepository.findAll());
             }
 
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: No rental found!"));
+            return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Bad token!"));
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -75,18 +71,12 @@ public class RentalController {
                     return ResponseEntity.ok(rentalRepository.findByUser_Id(id));
                 }
 
-                return ResponseEntity
-                        .badRequest()
-                        .body(new MessageResponse("Error: No rental found!"));
-            }else{
-                return ResponseEntity
-                        .badRequest()
-                        .body(new MessageResponse("Error: Bad user id!"));
+                return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);
+            } else {
+                return new ResponseEntity<>("No user found", HttpStatus.NOT_FOUND);
             }
         } else {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Bad token!"));
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -97,13 +87,9 @@ public class RentalController {
                 return ResponseEntity.ok(rentalRepository.findById(id));
             }
 
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: No rental found!"));
+            return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);
         } else {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Bad token!"));
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -116,21 +102,15 @@ public class RentalController {
                     rental.setRentalStatus(rentalStatusRepository.getReferenceById(statusID));
                     rentalRepository.save(rental);
 
-                    return ResponseEntity.ok(new MessageResponse("Success: Rent status changed successfully!"));
+                    return new ResponseEntity<>("Rental status changed", HttpStatus.OK);
                 }
 
-                return ResponseEntity
-                        .badRequest()
-                        .body(new MessageResponse("Error: No rental status found!"));
+                return new ResponseEntity<>("No rental status found", HttpStatus.NOT_FOUND);
             }
 
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: No rental found!"));
+            return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);
         } else {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Bad token!"));
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -144,16 +124,12 @@ public class RentalController {
                 rental.setEndDate(editCarRentalRequest.getEndDate());
                 rentalRepository.save(rental);
 
-                return ResponseEntity.ok(new MessageResponse("Success: Rent info changed successfully!"));
+                return new ResponseEntity<>("Rent details changed", HttpStatus.OK);
             }
 
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: No rental found!"));
+            return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);
         } else {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Bad token!"));
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
         }
     }
 }

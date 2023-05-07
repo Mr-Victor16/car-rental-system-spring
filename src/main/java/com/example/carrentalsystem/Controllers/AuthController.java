@@ -1,25 +1,19 @@
 package com.example.carrentalsystem.Controllers;
 
-import com.example.carrentalsystem.Models.ERole;
-import com.example.carrentalsystem.Models.Role;
-import com.example.carrentalsystem.Models.User;
-import com.example.carrentalsystem.Payload.Request.LoginRequest;
-import com.example.carrentalsystem.Payload.Request.SignupRequest;
-import com.example.carrentalsystem.Payload.Response.LoginResponse;
-import com.example.carrentalsystem.Payload.Response.MessageResponse;
-import com.example.carrentalsystem.Repositories.RoleRepository;
-import com.example.carrentalsystem.Repositories.UserRepository;
+import com.example.carrentalsystem.Models.*;
+import com.example.carrentalsystem.Payload.Request.*;
+import com.example.carrentalsystem.Payload.Response.*;
+import com.example.carrentalsystem.Repositories.*;
 
 import javax.validation.Valid;
 
 import com.example.carrentalsystem.Services.TokenService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -27,11 +21,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final PasswordEncoder encoder;
-
     private final UserRepository userRepository;
-
     private final RoleRepository roleRepository;
-
     private final TokenService tokenService = new TokenService();
 
     public AuthController(PasswordEncoder encoder, UserRepository userRepository, RoleRepository roleRepository) {
@@ -60,34 +51,28 @@ public class AuthController {
                         user.getToken(),
                         roles));
             } else {
-                return ResponseEntity
-                        .badRequest()
-                        .body(new MessageResponse("Error: Bad password!"));
+                return new ResponseEntity<>("Bad password", HttpStatus.FORBIDDEN);
             }
         }
 
-        return ResponseEntity
-                .badRequest()
-                .body(new MessageResponse("Error: Bad password!"));
+        return new ResponseEntity<>("User not found", HttpStatus.FORBIDDEN);
     }
 
     @PostMapping("signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest){
         if(userRepository.existsByUsername(signUpRequest.getUsername())){
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Username is already taken!"));
+            return new ResponseEntity<>("Username already in use", HttpStatus.CONFLICT);
         }
 
         if(userRepository.existsByEmail(signUpRequest.getEmail())){
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Email is already in use!"));
+            return new ResponseEntity<>("Email address already in use", HttpStatus.CONFLICT);
         }
 
-        User user = new User(signUpRequest.getUsername(),
+        User user = new User(
+                signUpRequest.getUsername(),
                 signUpRequest.getEmail(),
-                encoder.encode(signUpRequest.getPassword()));
+                encoder.encode(signUpRequest.getPassword())
+        );
 
         Set<String> strRoles = signUpRequest.getRole();
         Set<Role> roles = new HashSet<>();
@@ -113,7 +98,7 @@ public class AuthController {
         user.setRoles(roles);
         userRepository.save(user);
 
-        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+        return new ResponseEntity<>("User added", HttpStatus.OK);
     }
 
 }

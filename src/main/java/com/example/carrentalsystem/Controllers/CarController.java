@@ -4,8 +4,8 @@ import com.example.carrentalsystem.Models.*;
 import com.example.carrentalsystem.Payload.Request.AddCarRequest;
 import com.example.carrentalsystem.Payload.Request.EditCarRequest;
 import com.example.carrentalsystem.Payload.Request.GetCarInfoRequest;
-import com.example.carrentalsystem.Payload.Response.MessageResponse;
 import com.example.carrentalsystem.Repositories.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -48,9 +48,7 @@ public class CarController {
         if(userRepository.existsByToken(token)) {
             return ResponseEntity.ok(carRepository.findAll());
         } else {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Bad token!"));
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -89,7 +87,7 @@ public class CarController {
 
             return ResponseEntity.ok(carRepository.findByAvailable(true));
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Bad token!"));
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -108,9 +106,9 @@ public class CarController {
             carImageRepository.deleteById(imageID);
             carRepository.save(car);
 
-            return ResponseEntity.ok(new MessageResponse("Success: Successfully changed car's image!"));
+            return new ResponseEntity<>("Car photo changed", HttpStatus.OK);
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Bad token!"));
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -172,12 +170,12 @@ public class CarController {
                 }
 
                 carRepository.save(car);
-                return ResponseEntity.ok(new MessageResponse("Success: Successfully changed car's informations!"));
+                return new ResponseEntity<>("Car information changed", HttpStatus.OK);
             } else {
-                return ResponseEntity.badRequest().body(new MessageResponse("Error: Car not found!"));
+                return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
             }
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Bad token!"));
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -188,10 +186,10 @@ public class CarController {
             if(car != null){
                 return ResponseEntity.ok(car);
             } else {
-                return ResponseEntity.badRequest().body(new MessageResponse("Error: Car not found!"));
+                return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
             }
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Bad token!"));
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
         }
     }
 

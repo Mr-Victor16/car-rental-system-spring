@@ -2,8 +2,8 @@ package com.example.carrentalsystem.Controllers;
 
 import com.example.carrentalsystem.Models.User;
 import com.example.carrentalsystem.Payload.Request.ChangePasswordRequest;
-import com.example.carrentalsystem.Payload.Response.MessageResponse;
 import com.example.carrentalsystem.Repositories.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -30,11 +30,9 @@ public class ProfileController {
             user.setPassword(encoder.encode(changePasswordRequest.getNewPassword()));
             userRepository.save(user);
 
-            return ResponseEntity.ok(new MessageResponse("Success: Successfully changed password!"));
+            return new ResponseEntity<>("Password changed", HttpStatus.OK);
         } else {
-            return ResponseEntity
-                .badRequest()
-                .body(new MessageResponse("Error: Bad token!"));
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
         }
     }
 

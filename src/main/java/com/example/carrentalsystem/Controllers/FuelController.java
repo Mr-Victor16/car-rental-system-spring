@@ -1,7 +1,7 @@
 package com.example.carrentalsystem.Controllers;
 
-import com.example.carrentalsystem.Payload.Response.MessageResponse;
 import com.example.carrentalsystem.Repositories.FuelTypeRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,8 +24,6 @@ public class FuelController {
             return ResponseEntity.ok(fuelTypeRepository.findAll());
         }
 
-        return ResponseEntity
-                .badRequest()
-                .body(new MessageResponse("Error: No fuel found!"));
+        return new ResponseEntity<>("No fuel types found", HttpStatus.NOT_FOUND);
     }
 }
