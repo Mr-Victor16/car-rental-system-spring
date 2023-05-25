@@ -12,9 +12,9 @@ import javax.validation.constraints.NotNull;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetCarInfoRequest {
+public class CarInfoRequest {
     @NotNull
-    private Integer id;
+    private Long id;
 
     @NotBlank
     private String token;

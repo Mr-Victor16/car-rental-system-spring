@@ -14,7 +14,7 @@ import javax.persistence.*;
 public class RentalStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)

@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 public class CarImage {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer imageID;
+    private Long imageID;
 
     @Lob
     @Column(nullable = false)

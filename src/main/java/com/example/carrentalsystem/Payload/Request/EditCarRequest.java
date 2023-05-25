@@ -14,7 +14,8 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class EditCarRequest {
     @NotNull
-    private Integer id;
+    private Long id;
+
     @NotNull
     private Integer horsePower;
 
@@ -37,7 +38,7 @@ public class EditCarRequest {
     private String capacity;
 
     @NotNull
-    private Integer fuelType;
+    private Long fuelType;
 
     @NotBlank
     private String token;

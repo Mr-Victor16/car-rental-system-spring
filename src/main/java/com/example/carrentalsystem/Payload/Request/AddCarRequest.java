@@ -35,7 +35,7 @@ public class AddCarRequest {
     private String capacity;
 
     @NotNull
-    private Integer fuelType;
+    private Long fuelType;
 
     @NotBlank
     private String token;

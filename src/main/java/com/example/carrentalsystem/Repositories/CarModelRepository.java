@@ -9,4 +9,5 @@ public interface CarModelRepository extends JpaRepository<CarModel, Long> {
     void deleteByName(String name);
 
     int countByName(String name);
+
 }

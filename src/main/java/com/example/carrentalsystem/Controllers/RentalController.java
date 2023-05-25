@@ -52,7 +52,7 @@ public class RentalController {
 
     @GetMapping("get/all")
     public ResponseEntity<?> getAllRentals(@RequestBody String token){
-        if(userRepository.getByToken(token).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
+        if(userRepository.getUserByToken(token).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             if(rentalRepository.findAll().size() > 0){
                 return ResponseEntity.ok(rentalRepository.findAll());
             }

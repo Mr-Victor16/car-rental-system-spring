@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class AddCarRentalRequest {
     @NotNull
-    private Integer carID;
+    private Long carID;
 
     @NotNull
     private LocalDate startDate;

@@ -1,9 +1,7 @@
 package com.example.carrentalsystem.Controllers;
 
 import com.example.carrentalsystem.Models.*;
-import com.example.carrentalsystem.Payload.Request.AddCarRequest;
-import com.example.carrentalsystem.Payload.Request.EditCarRequest;
-import com.example.carrentalsystem.Payload.Request.GetCarInfoRequest;
+import com.example.carrentalsystem.Payload.Request.*;
 import com.example.carrentalsystem.Repositories.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +23,12 @@ public class CarController {
     private final CarImageRepository carImageRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final RentalRepository rentalRepository;
 
     public CarController(CarRepository carRepository, BrandRepository brandRepository, CarModelRepository carModelRepository,
                          FuelTypeRepository fuelTypeRepository, CarImageRepository carImageRepository, UserRepository userRepository,
-                         RoleRepository roleRepository) {
+                         RoleRepository roleRepository,
+                         RentalRepository rentalRepository) {
         this.carRepository = carRepository;
         this.brandRepository = brandRepository;
         this.carModelRepository = carModelRepository;
@@ -36,6 +36,7 @@ public class CarController {
         this.carImageRepository = carImageRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.rentalRepository = rentalRepository;
     }
 
     @GetMapping("available")
@@ -55,7 +56,7 @@ public class CarController {
     @Transactional
     @PostMapping("add")
     public ResponseEntity<?> addCar(@RequestBody @Valid AddCarRequest carRequest){
-        if(userRepository.getByToken(carRequest.getToken()).getRoles().contains(ERole.ROLE_ADMIN)){
+        if(userRepository.getUserByToken(carRequest.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             Brand brand;
             if (brandRepository.findByName(carRequest.getBrand()) != null) {
                 brand = brandRepository.findByName(carRequest.getBrand());
@@ -70,7 +71,7 @@ public class CarController {
                 model = carModelRepository.save(new CarModel(carRequest.getModel()));
             }
 
-            FuelType fuelType = fuelTypeRepository.getById(carRequest.getFuelType());
+            FuelType fuelType = fuelTypeRepository.findById(carRequest.getFuelType()).get();
 
             carRepository.save(new Car(
                     brand,
@@ -82,7 +83,7 @@ public class CarController {
                     carRequest.getCapacity(),
                     carRequest.getPrice(),
                     true,
-                    carImageRepository.getByImageID(1)
+                    carImageRepository.getByImageID(1L)
             ));
 
             return ResponseEntity.ok(carRepository.findByAvailable(true));
@@ -94,12 +95,12 @@ public class CarController {
     @Transactional
     @PostMapping("change-image")
     public ResponseEntity<?> changeCarImage(@RequestParam("myFile") MultipartFile file,
-                                            @RequestParam("carID") Integer carID,
+                                            @RequestParam("carID") Long carID,
                                             @RequestParam("token") String token) throws IOException {
 
-        if(userRepository.getByToken(token).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
+        if(userRepository.getUserByToken(token).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             Car car = carRepository.getCarById(carID);
-            Integer imageID = car.getCarImage().getImageID();
+            Long imageID = car.getCarImage().getImageID();
 
             CarImage carImage = carImageRepository.save(new CarImage(file.getBytes()));
             car.setCarImage(carImage);
@@ -115,7 +116,7 @@ public class CarController {
     @Transactional
     @PostMapping("edit")
     public ResponseEntity<?> editCar(@RequestBody @Valid EditCarRequest carRequest){
-        if(userRepository.getByToken(carRequest.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
+        if(userRepository.getUserByToken(carRequest.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             Car car = carRepository.getCarById(carRequest.getId());
             if(car != null){
                 if(!carRequest.getBrand().equals(car.getBrand().getName())){
@@ -166,7 +167,7 @@ public class CarController {
                 }
 
                 if(!carRequest.getFuelType().equals(car.getFuelType().getId())){
-                    car.setFuelType(fuelTypeRepository.getById(carRequest.getFuelType()));
+                    car.setFuelType(fuelTypeRepository.findById(carRequest.getFuelType()).get());
                 }
 
                 carRepository.save(car);
@@ -180,11 +181,43 @@ public class CarController {
     }
 
     @GetMapping("get")
-    public ResponseEntity<?> getCar(@RequestBody @Valid GetCarInfoRequest request){
-        if(userRepository.getByToken(request.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
+    public ResponseEntity<?> getCar(@RequestBody @Valid CarInfoRequest request){
+        if(userRepository.getUserByToken(request.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             Car car = carRepository.getCarById(request.getId());
             if(car != null){
                 return ResponseEntity.ok(car);
+            } else {
+                return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
+            }
+        } else {
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
+        }
+    }
+
+    @Transactional
+    @DeleteMapping("delete")
+    public ResponseEntity<?> deleteCar(@RequestBody @Valid CarInfoRequest request){
+        if(userRepository.getUserByToken(request.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
+            Car car = carRepository.getCarById(request.getId());
+            if(car != null){
+                if(rentalRepository.findByCar_Id(car.getId()).size() == 0){
+                    if(carRepository.findByModel_Name(car.getModel().getName()).size() == 1){
+                        carModelRepository.deleteById(car.getModel().getId());
+                    }
+
+                    if(carRepository.findByBrand_Name(car.getBrand().getName()).size() == 1){
+                        brandRepository.deleteById(car.getBrand().getId());
+                    }
+
+                    if(car.getCarImage().getImageID() != 1){
+                        carImageRepository.deleteById(car.getCarImage().getImageID());
+                    }
+
+                    carRepository.deleteById(car.getId());
+                    return new ResponseEntity<>("Car removed successfully", HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>("You cannot remove a car if it has a rental assigned to it", HttpStatus.CONFLICT);
+                }
             } else {
                 return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
             }

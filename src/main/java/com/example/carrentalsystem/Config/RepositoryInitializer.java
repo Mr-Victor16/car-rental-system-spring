@@ -15,19 +15,13 @@ import java.net.URLConnection;
 public class RepositoryInitializer {
     private final FuelTypeRepository fuelTypeRepository;
     private final RoleRepository roleRepository;
-    private final CarRepository carRepository;
-    private final BrandRepository brandRepository;
-    private final CarModelRepository carModelRepository;
     private final CarImageRepository carImageRepository;
     private final RentalStatusRepository rentalStatusRepository;
 
-    public RepositoryInitializer(FuelTypeRepository fuelTypeRepository, RoleRepository roleRepository, CarRepository carRepository, BrandRepository brandRepository, CarModelRepository carModelRepository, CarImageRepository carImageRepository,
-                                 RentalStatusRepository rentalStatusRepository) {
+    public RepositoryInitializer(FuelTypeRepository fuelTypeRepository, RoleRepository roleRepository,
+                                 CarImageRepository carImageRepository, RentalStatusRepository rentalStatusRepository) {
         this.fuelTypeRepository = fuelTypeRepository;
         this.roleRepository = roleRepository;
-        this.carRepository = carRepository;
-        this.brandRepository = brandRepository;
-        this.carModelRepository = carModelRepository;
         this.carImageRepository = carImageRepository;
         this.rentalStatusRepository = rentalStatusRepository;
     }
@@ -55,32 +49,10 @@ public class RepositoryInitializer {
                 roleRepository.save(new Role(ERole.ROLE_USER));
             }
 
-            if(brandRepository.findAll().isEmpty()){
-                brandRepository.save(new Brand("Audi"));
-            }
-
-            if(carModelRepository.findAll().isEmpty()){
-                carModelRepository.save(new CarModel("A3"));
-            }
-
-            if(carRepository.findAll().isEmpty() && carImageRepository.findAll().isEmpty()){
+            if(carImageRepository.findAll().isEmpty()){
                 carImageRepository.save(
                         new CarImage(
-                                imageFromURLToByteArray(new URL("https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"))
-                        )
-                );
-                carRepository.save(
-                        new Car(
-                                brandRepository.findByName("Audi"),
-                                carModelRepository.findByName("A3"),
-                                2013,
-                                150000,
-                                fuelTypeRepository.findByName(EFuelType.FUEL_DIESEL),
-                                220,
-                                "2.0",
-                                550,
-                                true,
-                                carImageRepository.getByImageID(1)
+                                imageFromURLToByteArray(new URL("https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"))
                         )
                 );
             }
