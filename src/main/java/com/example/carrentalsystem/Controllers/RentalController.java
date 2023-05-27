@@ -30,17 +30,18 @@ public class RentalController {
     }
 
     @PostMapping("add")
-    public ResponseEntity<?> addRental(@RequestBody @Valid AddCarRentalRequest addCarRentalRequest){
-        if(userRepository.existsByToken(addCarRentalRequest.getToken())) {
-            Car car = carRepository.getCarById(addCarRentalRequest.getCarID());
+    public ResponseEntity<?> addRental(@RequestBody @Valid AddCarRentalRequest request){
+        if(userRepository.existsByToken(request.getToken()) &&
+                userRepository.getUserByToken(request.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))) {
+            Car car = carRepository.getCarById(request.getCarID());
 
             rentalRepository.save(new Rental(
                     car,
-                    userRepository.getUserByToken(addCarRentalRequest.getToken()),
-                    addCarRentalRequest.getStartDate(),
-                    addCarRentalRequest.getEndDate(),
-                    addCarRentalRequest.getAddDate(),
-                    Math.toIntExact((ChronoUnit.DAYS.between(addCarRentalRequest.getStartDate(), addCarRentalRequest.getEndDate())+1) * car.getPrice()),
+                    userRepository.getUserByToken(request.getToken()),
+                    request.getStartDate(),
+                    request.getEndDate(),
+                    request.getAddDate(),
+                    Math.toIntExact((ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate())+1) * car.getPrice()),
                     rentalStatusRepository.findByName(ERentalStatus.STATUS_PENDING)
             ));
 
@@ -84,7 +85,12 @@ public class RentalController {
     public ResponseEntity<?> getRentalInfo(@RequestBody String token, @PathVariable("id") Long id){
         if(userRepository.existsByToken(token)) {
             if(rentalRepository.existsById(id)){
-                return ResponseEntity.ok(rentalRepository.findById(id));
+                if((rentalRepository.findById(id).get().getUser().getId() == userRepository.getUserByToken(token).getId())
+                        || (userRepository.getUserByToken(token).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN)))){
+                    return ResponseEntity.ok(rentalRepository.findById(id));
+                }
+
+                return new ResponseEntity<>("No permission to access this resource", HttpStatus.FORBIDDEN);
             }
 
             return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);
@@ -95,7 +101,8 @@ public class RentalController {
 
     @PostMapping("status/{statusID}/rental/{id}")
     public ResponseEntity<?> changeStatus(@RequestBody String token, @PathVariable("statusID") Long statusID, @PathVariable("id") Long id){
-        if(userRepository.existsByToken(token)) {
+        if(userRepository.existsByToken(token) &&
+                userRepository.getUserByToken(token).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))) {
             if(rentalRepository.existsById(id)){
                 if(rentalStatusRepository.existsById(statusID)){
                     Rental rental = rentalRepository.getReferenceById(id);
@@ -115,16 +122,31 @@ public class RentalController {
     }
 
     @PostMapping("edit")
-    public ResponseEntity<?> changeRentalInformation(@RequestBody @Valid EditCarRentalRequest editCarRentalRequest){
-        if(userRepository.existsByToken(editCarRentalRequest.getToken())) {
-            if(rentalRepository.existsById(editCarRentalRequest.getRentId())){
-                Rental rental = rentalRepository.getReferenceById(editCarRentalRequest.getRentId());
-                rental.setPrice(Math.toIntExact((ChronoUnit.DAYS.between(editCarRentalRequest.getStartDate(), editCarRentalRequest.getEndDate())+1) * rental.getCar().getPrice()));
-                rental.setStartDate(editCarRentalRequest.getStartDate());
-                rental.setEndDate(editCarRentalRequest.getEndDate());
+    public ResponseEntity<?> changeRentalInformation(@RequestBody @Valid EditCarRentalRequest request){
+        if(userRepository.existsByToken(request.getToken()) &&
+                userRepository.getUserByToken(request.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))) {
+            if(rentalRepository.existsById(request.getRentId())){
+                Rental rental = rentalRepository.getReferenceById(request.getRentId());
+                rental.setPrice(Math.toIntExact((ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate())+1) * rental.getCar().getPrice()));
+                rental.setStartDate(request.getStartDate());
+                rental.setEndDate(request.getEndDate());
                 rentalRepository.save(rental);
 
                 return new ResponseEntity<>("Rent details changed", HttpStatus.OK);
+            }
+
+            return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);
+        } else {
+            return new ResponseEntity<>("Bad token", HttpStatus.FORBIDDEN);
+        }
+    }
+
+    @DeleteMapping("delete")
+    public ResponseEntity<?> deleteRental(@RequestBody @Valid SimpleRequest request){
+        if(userRepository.getUserByToken(request.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))) {
+            if(rentalRepository.existsById(request.getId())){
+                rentalRepository.deleteById(request.getId());
+                return new ResponseEntity<>("Rent removed successfully", HttpStatus.OK);
             }
 
             return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);

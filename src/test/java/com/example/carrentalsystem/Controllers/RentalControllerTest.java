@@ -173,12 +173,13 @@ class RentalControllerTest {
     @Test()
     @Order(10)
     void deleteAll() throws Exception {
-        Rental rental = rentalRepository.getReferenceById(rentalID);
+        SimpleRequest rentalRequest = new SimpleRequest(rentalID, userToken);
+        mvc.perform(delete("/api/rental/delete").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(rentalRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        rentalRepository.deleteById(rental.getId());
-
-        CarInfoRequest carInfoRequest = new CarInfoRequest(carID, userToken);
-        mvc.perform(delete("/api/cars/delete").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(carInfoRequest)))
+        SimpleRequest carRequest = new SimpleRequest(carID, userToken);
+        mvc.perform(delete("/api/cars/delete").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(carRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 

@@ -181,7 +181,7 @@ public class CarController {
     }
 
     @GetMapping("get")
-    public ResponseEntity<?> getCar(@RequestBody @Valid CarInfoRequest request){
+    public ResponseEntity<?> getCar(@RequestBody @Valid SimpleRequest request){
         if(userRepository.getUserByToken(request.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             Car car = carRepository.getCarById(request.getId());
             if(car != null){
@@ -196,7 +196,7 @@ public class CarController {
 
     @Transactional
     @DeleteMapping("delete")
-    public ResponseEntity<?> deleteCar(@RequestBody @Valid CarInfoRequest request){
+    public ResponseEntity<?> deleteCar(@RequestBody @Valid SimpleRequest request){
         if(userRepository.getUserByToken(request.getToken()).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN))){
             Car car = carRepository.getCarById(request.getId());
             if(car != null){

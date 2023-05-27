@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CarInfoRequest {
+public class SimpleRequest {
     @NotNull
     private Long id;
 

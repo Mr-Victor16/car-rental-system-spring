@@ -1,5 +1,5 @@
 # Car rental system [Backend]
-Repozytorium w ciągłym rozwoju - wczesny etap tworzenia.
+Repozytorium w ciągłym rozwoju - wczesny etap tworzenia.  
 Frontend: [car-rental-system-react](https://github.com/Mr-Victor16/car-rental-system-react)
 
 ## Obecnie zaimplementowane funkcjonalności:
