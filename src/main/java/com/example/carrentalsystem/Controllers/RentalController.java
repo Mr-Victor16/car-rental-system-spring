@@ -85,7 +85,7 @@ public class RentalController {
     public ResponseEntity<?> getRentalInfo(@RequestBody String token, @PathVariable("id") Long id){
         if(userRepository.existsByToken(token)) {
             if(rentalRepository.existsById(id)){
-                if((rentalRepository.findById(id).get().getUser().getId() == userRepository.getUserByToken(token).getId())
+                if((rentalRepository.findById(id).get().getUser().getId().equals(userRepository.getUserByToken(token).getId()))
                         || (userRepository.getUserByToken(token).getRoles().contains(roleRepository.getByName(ERole.ROLE_ADMIN)))){
                     return ResponseEntity.ok(rentalRepository.findById(id));
                 }

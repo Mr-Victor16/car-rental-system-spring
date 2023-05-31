@@ -8,15 +8,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -24,7 +23,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
@@ -173,10 +171,25 @@ class RentalControllerTest {
     @Test()
     @Order(10)
     void deleteAll() throws Exception {
-        SimpleRequest rentalRequest = new SimpleRequest(rentalID, userToken);
-        mvc.perform(delete("/api/rental/delete").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(rentalRequest)))
-                .andExpect(status().isOk())
-                .andReturn();
+        SimpleRequest rentalRequest;
+
+        List<Rental> rentalList = new ArrayList<>(rentalRepository.findByCar_Id(carID));
+        for(Rental rental : rentalList){
+           rentalRequest = new SimpleRequest(rental.getId(), userToken);
+
+            mvc.perform(delete("/api/rental/delete").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(rentalRequest)))
+                    .andExpect(status().isOk())
+                    .andReturn();
+        }
+
+        rentalList = new ArrayList<>(rentalRepository.findByUser_Id(userRepository.getUserByToken(userToken).getId()));
+        for(Rental rental : rentalList){
+            rentalRequest = new SimpleRequest(rental.getId(), userToken);
+
+            mvc.perform(delete("/api/rental/delete").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(rentalRequest)))
+                    .andExpect(status().isOk())
+                    .andReturn();
+        }
 
         SimpleRequest carRequest = new SimpleRequest(carID, userToken);
         mvc.perform(delete("/api/cars/delete").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(carRequest)))
