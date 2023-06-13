@@ -1,20 +1,16 @@
 package com.example.carrentalsystem.Payload.Request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import javax.validation.constraints.NotBlank;
+import lombok.*;
+import jakarta.validation.constraints.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChangePasswordRequest {
-    @NotBlank
-    private String newPassword;
+    @NotNull
+    private Long userID;
 
     @NotBlank
-    private String token;
+    private String newPassword;
 }

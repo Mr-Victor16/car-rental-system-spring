@@ -1,10 +1,7 @@
 package com.example.carrentalsystem.Models;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import javax.persistence.*;
+import lombok.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "rental_statuses")

@@ -5,11 +5,17 @@ import com.example.carrentalsystem.Payload.Request.*;
 import com.example.carrentalsystem.Payload.Response.*;
 import com.example.carrentalsystem.Repositories.*;
 
-import javax.validation.Valid;
+import com.example.carrentalsystem.Security.JWT.JWTUtils;
+import com.example.carrentalsystem.Security.Services.UserDetailsImpl;
+import jakarta.validation.Valid;
 
-import com.example.carrentalsystem.Services.TokenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,49 +29,46 @@ public class AuthController {
     private final PasswordEncoder encoder;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final TokenService tokenService = new TokenService();
+    private final JWTUtils jwtUtils;
+    private final AuthenticationManager authenticationManager;
 
-    public AuthController(PasswordEncoder encoder, UserRepository userRepository, RoleRepository roleRepository) {
+    public AuthController(PasswordEncoder encoder, UserRepository userRepository, RoleRepository roleRepository,
+                          JWTUtils jwtUtils, AuthenticationManager authenticationManager) {
         this.encoder = encoder;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.jwtUtils = jwtUtils;
+        this.authenticationManager = authenticationManager;
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@RequestBody @Valid LoginRequest loginRequest) {
-        if (userRepository.existsByUsername(loginRequest.getUsername())) {
-            User user = userRepository.getUserByUsername(loginRequest.getUsername());
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-            if (encoder.matches(loginRequest.getPassword(), user.getPassword())) {
-                user.setToken(tokenService.generate(user.getId()));
-                userRepository.save(user);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtUtils.generateJwtToken(authentication);
 
-                List<String> roles = user.getRoles().stream()
-                        .map(item -> item.getName().name())
-                        .collect(Collectors.toList());
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
 
-                return ResponseEntity.ok(new LoginResponse(
-                        user.getId(),
-                        user.getUsername(),
-                        user.getEmail(),
-                        user.getToken(),
-                        roles
-                ));
-            } else {
-                return new ResponseEntity<>("Bad password", HttpStatus.FORBIDDEN);
-            }
-        }
-
-        return new ResponseEntity<>("User not found", HttpStatus.FORBIDDEN);
+        return ResponseEntity.ok(new LoginResponse(
+                token,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                roles));
     }
 
-    @PostMapping("signup")
-    public ResponseEntity<?> registerUser(@RequestBody @Valid SignupRequest signUpRequest){
-        if(userRepository.existsByUsername(signUpRequest.getUsername())){
+    @PostMapping("/signup")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             return new ResponseEntity<>("Username already in use", HttpStatus.CONFLICT);
         }
 
-        if(userRepository.existsByEmail(signUpRequest.getEmail())){
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return new ResponseEntity<>("Email address already in use", HttpStatus.CONFLICT);
         }
 
@@ -78,19 +81,19 @@ public class AuthController {
         Set<String> strRoles = signUpRequest.getRole();
         Set<Role> roles = new HashSet<>();
 
-        if(strRoles == null){
+        if (strRoles == null) {
             Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
                 if (role.equals("admin")) {
                     Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                            .orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                     roles.add(adminRole);
                 } else {
                     Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                            .orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                     roles.add(userRole);
                 }
             });

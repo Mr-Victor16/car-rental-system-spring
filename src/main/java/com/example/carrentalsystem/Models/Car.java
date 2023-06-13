@@ -1,12 +1,8 @@
 package com.example.carrentalsystem.Models;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import lombok.*;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name = "cars")
@@ -47,7 +43,7 @@ public class Car {
 
     private boolean available;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "car_image_image_id")
     private CarImage carImage;
 

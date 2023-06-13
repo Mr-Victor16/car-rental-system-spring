@@ -1,10 +1,7 @@
 package com.example.carrentalsystem.Models;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import javax.persistence.*;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "fuel_types")

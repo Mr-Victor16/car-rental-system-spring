@@ -11,6 +11,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -32,6 +33,7 @@ class RentalControllerTest {
     private MockMvc mvc;
 
     private String userToken;
+    private Long userID;
     private Long carID;
     private Long rentalID;
 
@@ -70,13 +72,14 @@ class RentalControllerTest {
                 .andReturn();
 
         userToken = new JSONObject(result.getResponse().getContentAsString()).getString("token");
+        userID = userRepository.getUserByUsername("TestUser").getId();
+        System.out.println(userID);
     }
 
     @Test()
     @Order(3)
     void addCar() throws Exception {
         AddCarRequest carRequest = new AddCarRequest();
-        carRequest.setToken(userToken);
         carRequest.setMileage(123567);
         carRequest.setHorsePower(120);
         carRequest.setYear(2015);
@@ -86,7 +89,9 @@ class RentalControllerTest {
         carRequest.setBrand("Audi");
         carRequest.setModel("A3");
 
-        mvc.perform(post("/api/cars/add").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(carRequest)))
+        mvc.perform(post("/api/cars/add").contentType(APPLICATION_JSON_VALUE)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken)
+                        .content(new ObjectMapper().writeValueAsString(carRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -96,28 +101,27 @@ class RentalControllerTest {
     @Test()
     @Order(4)
     void addRental() throws Exception {
-        AddCarRentalRequest carRentalRequest = new AddCarRentalRequest();
-        carRentalRequest.setCarID(carID);
-        carRentalRequest.setToken(userToken);
-        carRentalRequest.setAddDate(LocalDate.now());
-        carRentalRequest.setStartDate(LocalDate.now());
-        carRentalRequest.setEndDate(LocalDate.now().plusDays(10));
+        AddCarRentalRequest rentalRequest = new AddCarRentalRequest(carID, userID, LocalDate.now(), LocalDate.now(), LocalDate.now().plusDays(10));
 
-        mvc.perform(post("/api/rental/add").contentType(APPLICATION_JSON_VALUE).content(
-                new ObjectMapper()
-                        .registerModule(new JavaTimeModule())
-                        .writeValueAsString(carRentalRequest)
-                ))
+        mvc.perform(post("/api/rental/add").contentType(APPLICATION_JSON_VALUE)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken)
+                        .content(
+                            new ObjectMapper()
+                                    .registerModule(new JavaTimeModule())
+                                    .writeValueAsString(rentalRequest)
+                            )
+                )
                 .andExpect(status().isOk())
                 .andReturn();
 
-        rentalID = rentalRepository.findByUser_Id(userRepository.getUserByToken(userToken).getId()).get(0).getId();
+        rentalID = rentalRepository.findByUser_Id(userID).get(0).getId();
     }
 
     @Test()
     @Order(5)
     void getAllRentals() throws Exception {
-        mvc.perform(get("/api/rental/get/all").contentType(APPLICATION_JSON_VALUE).content(userToken))
+        mvc.perform(get("/api/rental/get/all")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andReturn();
     }
@@ -125,9 +129,8 @@ class RentalControllerTest {
     @Test()
     @Order(6)
     void getUserRentals() throws Exception {
-        Long userID = userRepository.getUserByToken(userToken).getId();
-
-        mvc.perform(get("/api/rental/get/user/"+userID).contentType(APPLICATION_JSON_VALUE).content(userToken))
+        mvc.perform(get("/api/rental/get/user/"+userID).contentType(APPLICATION_JSON_VALUE)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andReturn();
     }
@@ -135,7 +138,8 @@ class RentalControllerTest {
     @Test()
     @Order(7)
     void getRentalInfo() throws Exception {
-        mvc.perform(get("/api/rental/get/"+rentalID).contentType(APPLICATION_JSON_VALUE).content(userToken))
+        mvc.perform(get("/api/rental/get/"+rentalID)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andReturn();
     }
@@ -145,7 +149,8 @@ class RentalControllerTest {
     void changeStatus() throws Exception {
         Long statusID = rentalStatusRepository.findByName(ERentalStatus.STATUS_PENDING).getId();
 
-        mvc.perform(post("/api/rental/status/"+statusID+"/rental/"+rentalID).contentType(APPLICATION_JSON_VALUE).content(userToken))
+        mvc.perform(post("/api/rental/status/"+statusID+"/rental/"+rentalID)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andReturn();
     }
@@ -155,15 +160,17 @@ class RentalControllerTest {
     void changeRentalInformation() throws Exception{
         EditCarRentalRequest carRentalRequest = new EditCarRentalRequest();
         carRentalRequest.setRentId(rentalID);
-        carRentalRequest.setToken(userToken);
         carRentalRequest.setStartDate(LocalDate.now().plusDays(1));
         carRentalRequest.setEndDate(LocalDate.now().plusDays(5));
 
-        mvc.perform(post("/api/rental/edit").contentType(APPLICATION_JSON_VALUE).content(
-                new ObjectMapper()
-                        .registerModule(new JavaTimeModule())
-                        .writeValueAsString(carRentalRequest)
-                ))
+        mvc.perform(post("/api/rental/edit").contentType(APPLICATION_JSON_VALUE)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken)
+                        .content(
+                        new ObjectMapper()
+                                .registerModule(new JavaTimeModule())
+                                .writeValueAsString(carRentalRequest)
+                        )
+                )
                 .andExpect(status().isOk())
                 .andReturn();
     }
@@ -171,31 +178,27 @@ class RentalControllerTest {
     @Test()
     @Order(10)
     void deleteAll() throws Exception {
-        SimpleRequest rentalRequest;
-
         List<Rental> rentalList = new ArrayList<>(rentalRepository.findByCar_Id(carID));
         for(Rental rental : rentalList){
-           rentalRequest = new SimpleRequest(rental.getId(), userToken);
-
-            mvc.perform(delete("/api/rental/delete").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(rentalRequest)))
+            mvc.perform(delete("/api/rental/delete/"+rental.getId())
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                     .andExpect(status().isOk())
                     .andReturn();
         }
 
-        rentalList = new ArrayList<>(rentalRepository.findByUser_Id(userRepository.getUserByToken(userToken).getId()));
+        rentalList = new ArrayList<>(rentalRepository.findByUser_Id(userID));
         for(Rental rental : rentalList){
-            rentalRequest = new SimpleRequest(rental.getId(), userToken);
-
-            mvc.perform(delete("/api/rental/delete").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(rentalRequest)))
+            mvc.perform(delete("/api/rental/delete/"+rental.getId())
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                     .andExpect(status().isOk())
                     .andReturn();
         }
 
-        SimpleRequest carRequest = new SimpleRequest(carID, userToken);
-        mvc.perform(delete("/api/cars/delete").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(carRequest)))
+        mvc.perform(delete("/api/cars/delete/"+carID)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        userRepository.deleteById(userRepository.getUserByToken(userToken).getId());
+        userRepository.deleteById(userID);
     }
 }

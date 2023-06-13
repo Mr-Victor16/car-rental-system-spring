@@ -8,6 +8,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -30,6 +31,8 @@ public class ProfileControllerTest {
     private UserRepository userRepository;
 
     private String userToken;
+
+    private Long userID;
 
     @Test()
     @Order(1)
@@ -57,14 +60,17 @@ public class ProfileControllerTest {
                 .andReturn();
 
         userToken = new JSONObject(result.getResponse().getContentAsString()).getString("token");
+        userID = userRepository.getUserByUsername("ProfileTestUser").getId();
     }
 
     @Test()
     @Order(3)
     void changeUserPassword() throws Exception {
-        ChangePasswordRequest passwordRequest = new ChangePasswordRequest("NewPassword", userToken);
+        ChangePasswordRequest passwordRequest = new ChangePasswordRequest(userID, "NewPassword");
 
-        mvc.perform(post("/api/profile/change-password").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(passwordRequest)))
+        mvc.perform(post("/api/profile/change-password").contentType(APPLICATION_JSON_VALUE)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken)
+                        .content(new ObjectMapper().writeValueAsString(passwordRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
     }
@@ -75,13 +81,13 @@ public class ProfileControllerTest {
         LoginRequest loginRequest = new LoginRequest("ProfileTestUser", "TestPassword");
 
         mvc.perform(post("/api/auth/signin").contentType(APPLICATION_JSON_VALUE).content(new ObjectMapper().writeValueAsString(loginRequest)))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isUnauthorized())
                 .andReturn();
     }
 
     @Test()
     @Order(5)
     void deleteAll() {
-        userRepository.deleteById(userRepository.getUserByToken(userToken).getId());
+        userRepository.deleteById(userID);
     }
 }

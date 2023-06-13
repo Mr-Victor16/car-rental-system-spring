@@ -1,12 +1,7 @@
 package com.example.carrentalsystem.Payload.Request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import lombok.*;
+import jakarta.validation.constraints.*;
 
 @Getter
 @Setter
@@ -36,7 +31,4 @@ public class AddCarRequest {
 
     @NotNull
     private Long fuelType;
-
-    @NotBlank
-    private String token;
 }

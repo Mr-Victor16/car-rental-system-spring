@@ -4,6 +4,8 @@ import com.example.carrentalsystem.Models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -13,8 +15,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     User getUserByUsername(String username);
 
-    User getUserByToken(String token);
-
-    boolean existsByToken(String token);
-
+    Optional<User> findByUsername(String username);
 }

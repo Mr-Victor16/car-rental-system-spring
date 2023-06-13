@@ -1,13 +1,8 @@
 package com.example.carrentalsystem.Payload.Request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import jakarta.validation.constraints.*;
 
-import javax.validation.constraints.FutureOrPresent;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Getter
@@ -19,6 +14,9 @@ public class AddCarRentalRequest {
     private Long carID;
 
     @NotNull
+    private Long userID;
+
+    @NotNull
     private LocalDate startDate;
 
     @NotNull
@@ -28,7 +26,4 @@ public class AddCarRentalRequest {
     @NotNull
     @FutureOrPresent
     private LocalDate endDate;
-
-    @NotBlank
-    private String token;
 }

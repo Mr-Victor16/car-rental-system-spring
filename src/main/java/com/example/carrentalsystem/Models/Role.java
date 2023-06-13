@@ -1,9 +1,7 @@
 package com.example.carrentalsystem.Models;
 
-import javax.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "roles")

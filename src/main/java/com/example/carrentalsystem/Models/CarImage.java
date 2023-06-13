@@ -1,11 +1,7 @@
 package com.example.carrentalsystem.Models;
 
-import javax.persistence.*;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "car_images")
@@ -18,7 +14,7 @@ public class CarImage {
     private Long imageID;
 
     @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition="BLOB", nullable = false)
     private byte[] fileContent;
 
     public CarImage(byte[] fileContent) {
