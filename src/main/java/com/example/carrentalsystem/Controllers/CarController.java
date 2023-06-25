@@ -172,6 +172,23 @@ public class CarController {
         }
     }
 
+    @PostMapping("status/{carID}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> changeCarStatus(@PathVariable("carID") Long carID){
+        Car car = carRepository.getCarById(carID);
+        if(car != null){
+            if(rentalRepository.findByCar_Id(car.getId()).size() == 0){
+                car.setAvailable(!car.isAvailable());
+                carRepository.save(car);
+                return new ResponseEntity<>("The availability of the car has been changed", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Car has active rental", HttpStatus.CONFLICT);
+            }
+        } else {
+            return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
     @Transactional
     @DeleteMapping("delete/{carID}")
     @PreAuthorize("hasRole('ADMIN')")

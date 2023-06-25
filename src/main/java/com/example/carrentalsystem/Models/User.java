@@ -1,5 +1,6 @@
 package com.example.carrentalsystem.Models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -32,10 +33,8 @@ public class User {
 
     @NotBlank
     @Size(max = 120)
+    @JsonIgnore
     private String password;
-
-    @Size(max = 10)
-    private String token;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable( name = "user_roles",

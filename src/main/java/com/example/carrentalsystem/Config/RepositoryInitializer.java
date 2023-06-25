@@ -6,10 +6,15 @@ import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 @Configuration
 public class RepositoryInitializer {
@@ -17,17 +22,19 @@ public class RepositoryInitializer {
     private final RoleRepository roleRepository;
     private final CarImageRepository carImageRepository;
     private final RentalStatusRepository rentalStatusRepository;
+    private final PasswordEncoder encoder;
 
     public RepositoryInitializer(FuelTypeRepository fuelTypeRepository, RoleRepository roleRepository,
-                                 CarImageRepository carImageRepository, RentalStatusRepository rentalStatusRepository) {
+                                 CarImageRepository carImageRepository, RentalStatusRepository rentalStatusRepository, PasswordEncoder encoder) {
         this.fuelTypeRepository = fuelTypeRepository;
         this.roleRepository = roleRepository;
         this.carImageRepository = carImageRepository;
         this.rentalStatusRepository = rentalStatusRepository;
+        this.encoder = encoder;
     }
 
     @Bean
-    InitializingBean init() {
+    InitializingBean init(UserRepository userRepository) {
         return () -> {
             if(fuelTypeRepository.findAll().isEmpty()){
                 fuelTypeRepository.save(new FuelType(EFuelType.FUEL_DIESEL));
@@ -55,6 +62,17 @@ public class RepositoryInitializer {
                                 imageFromURLToByteArray(new URL("https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"))
                         )
                 );
+            }
+
+            if(userRepository.findAll().isEmpty()){
+                User user = new User("admin", "admin@admin.pl", encoder.encode("admin"));
+                Set<Role> roles = new HashSet<>();
+
+                Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                roles.add(adminRole);
+
+                user.setRoles(roles);
+                userRepository.save(user);
             }
         };
     }

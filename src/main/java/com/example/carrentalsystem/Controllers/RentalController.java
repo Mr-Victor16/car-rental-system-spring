@@ -49,22 +49,14 @@ public class RentalController {
     @GetMapping("get/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllRentals(){
-        if(rentalRepository.findAll().size() > 0){
-            return ResponseEntity.ok(rentalRepository.findAll());
-        }
-
-        return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);
+        return ResponseEntity.ok(rentalRepository.findAll());
     }
 
     @GetMapping("get/user/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> getUserRentals(@PathVariable("id") Long id){
         if(userRepository.existsById(id)){
-            if(rentalRepository.findByUser_Id(id).size() > 0){
-                return ResponseEntity.ok(rentalRepository.findByUser_Id(id));
-            }
-
-            return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);
+            return ResponseEntity.ok(rentalRepository.findByUser_Id(id));
         } else {
             return new ResponseEntity<>("No user found", HttpStatus.NOT_FOUND);
         }
