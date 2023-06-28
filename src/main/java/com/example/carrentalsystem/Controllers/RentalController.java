@@ -3,6 +3,7 @@ package com.example.carrentalsystem.Controllers;
 import com.example.carrentalsystem.Models.*;
 import com.example.carrentalsystem.Payload.Request.*;
 import com.example.carrentalsystem.Repositories.*;
+import com.example.carrentalsystem.Services.RentalServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,15 +27,17 @@ public class RentalController {
     private final RentalRepository rentalRepository;
     private final RentalStatusRepository rentalStatusRepository;
     private final StatusHistoryRepository statusHistoryRepository;
+    private final RentalServiceImpl rentalService;
 
     public RentalController(CarRepository carRepository, UserRepository userRepository, RentalRepository rentalRepository,
-                            RentalStatusRepository rentalStatusRepository,
-                            StatusHistoryRepository statusHistoryRepository) {
+                            RentalStatusRepository rentalStatusRepository, StatusHistoryRepository statusHistoryRepository,
+                            RentalServiceImpl rentalService) {
         this.carRepository = carRepository;
         this.userRepository = userRepository;
         this.rentalRepository = rentalRepository;
         this.rentalStatusRepository = rentalStatusRepository;
         this.statusHistoryRepository = statusHistoryRepository;
+        this.rentalService = rentalService;
     }
 
     @PostMapping("add")
@@ -92,26 +95,7 @@ public class RentalController {
     public ResponseEntity<?> changeStatus(@PathVariable("statusID") Long statusID, @PathVariable("id") Long id){
         if(rentalRepository.existsById(id)){
             if(rentalStatusRepository.existsById(statusID)){
-                Rental rental = rentalRepository.getReferenceById(id);
-                RentalStatus rentalStatus = rentalStatusRepository.getReferenceById(statusID);
-                rental.setRentalStatus(rentalStatus);
-
-                StatusHistory newStatus = new StatusHistory(rentalStatus, LocalDate.now());
-                rental.getStatusHistory().add(statusHistoryRepository.save(newStatus));
-                rentalRepository.save(rental);
-
-                if(rentalStatus.getName() == ERentalStatus.STATUS_ACCEPTED) {
-                    if (rentalRepository.findByCarAndDateAndRentalStatus_Name(rental.getCar().getId(), rental.getStartDate(), rental.getEndDate(), ERentalStatus.STATUS_PENDING).size() != 0) {
-                        List<Rental> rentalList = rentalRepository.findByCarAndDateAndRentalStatus_Name(rental.getCar().getId(), rental.getStartDate(), rental.getEndDate(), ERentalStatus.STATUS_PENDING);
-                        for (Rental item : rentalList) {
-                            if (!Objects.equals(item.getId(), id)) {
-                                item.setRentalStatus(rentalStatusRepository.findByName(ERentalStatus.STATUS_REJECTED));
-                                rentalRepository.save(item);
-                            }
-                        }
-                    }
-                }
-
+                rentalService.changeRentalStatus(statusID, id);
                 return new ResponseEntity<>("Rental status changed", HttpStatus.OK);
             }
 
