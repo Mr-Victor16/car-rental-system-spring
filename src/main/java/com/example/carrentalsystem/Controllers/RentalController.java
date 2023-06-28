@@ -15,6 +15,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -92,18 +93,21 @@ public class RentalController {
         if(rentalRepository.existsById(id)){
             if(rentalStatusRepository.existsById(statusID)){
                 Rental rental = rentalRepository.getReferenceById(id);
-                rental.setRentalStatus(rentalStatusRepository.getReferenceById(statusID));
+                RentalStatus rentalStatus = rentalStatusRepository.getReferenceById(statusID);
+                rental.setRentalStatus(rentalStatus);
 
-                StatusHistory newStatus = new StatusHistory(rentalStatusRepository.getReferenceById(statusID), LocalDate.now());
+                StatusHistory newStatus = new StatusHistory(rentalStatus, LocalDate.now());
                 rental.getStatusHistory().add(statusHistoryRepository.save(newStatus));
                 rentalRepository.save(rental);
 
-                if(rentalRepository.findByCarAndDateAndRentalStatus_Name(rental.getCar().getId(), rental.getStartDate(), rental.getEndDate(), ERentalStatus.STATUS_PENDING).size() != 0){
-                    List<Rental> rentalList = rentalRepository.findByCarAndDateAndRentalStatus_Name(rental.getCar().getId(), rental.getStartDate(), rental.getEndDate(), ERentalStatus.STATUS_PENDING);
-                    for (Rental item : rentalList) {
-                        if(item.getId() != id){
-                            item.setRentalStatus(rentalStatusRepository.findByName(ERentalStatus.STATUS_REJECTED));
-                            rentalRepository.save(item);
+                if(rentalStatus.getName() == ERentalStatus.STATUS_ACCEPTED) {
+                    if (rentalRepository.findByCarAndDateAndRentalStatus_Name(rental.getCar().getId(), rental.getStartDate(), rental.getEndDate(), ERentalStatus.STATUS_PENDING).size() != 0) {
+                        List<Rental> rentalList = rentalRepository.findByCarAndDateAndRentalStatus_Name(rental.getCar().getId(), rental.getStartDate(), rental.getEndDate(), ERentalStatus.STATUS_PENDING);
+                        for (Rental item : rentalList) {
+                            if (!Objects.equals(item.getId(), id)) {
+                                item.setRentalStatus(rentalStatusRepository.findByName(ERentalStatus.STATUS_REJECTED));
+                                rentalRepository.save(item);
+                            }
                         }
                     }
                 }
