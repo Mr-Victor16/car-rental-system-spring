@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.time.LocalDate;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -179,7 +180,7 @@ public class CarController {
     public ResponseEntity<?> changeCarStatus(@PathVariable("carID") Long carID){
         Car car = carRepository.getCarById(carID);
         if(car != null){
-            if(rentalRepository.findByCar_Id(car.getId()).size() == 0){
+            if(rentalRepository.findByRentalDateAndRentalStatus_Name(LocalDate.now(), ERentalStatus.STATUS_ACCEPTED).size() == 0){
                 car.setAvailable(!car.isAvailable());
                 carRepository.save(car);
                 return new ResponseEntity<>("The availability of the car has been changed", HttpStatus.OK);

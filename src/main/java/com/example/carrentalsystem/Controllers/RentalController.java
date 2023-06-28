@@ -98,6 +98,16 @@ public class RentalController {
                 rental.getStatusHistory().add(statusHistoryRepository.save(newStatus));
                 rentalRepository.save(rental);
 
+                if(rentalRepository.findByCarAndDateAndRentalStatus_Name(rental.getCar().getId(), rental.getStartDate(), rental.getEndDate(), ERentalStatus.STATUS_PENDING).size() != 0){
+                    List<Rental> rentalList = rentalRepository.findByCarAndDateAndRentalStatus_Name(rental.getCar().getId(), rental.getStartDate(), rental.getEndDate(), ERentalStatus.STATUS_PENDING);
+                    for (Rental item : rentalList) {
+                        if(item.getId() != id){
+                            item.setRentalStatus(rentalStatusRepository.findByName(ERentalStatus.STATUS_REJECTED));
+                            rentalRepository.save(item);
+                        }
+                    }
+                }
+
                 return new ResponseEntity<>("Rental status changed", HttpStatus.OK);
             }
 
