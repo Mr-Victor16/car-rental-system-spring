@@ -9,7 +9,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -19,19 +24,27 @@ public class RentalController {
     private final UserRepository userRepository;
     private final RentalRepository rentalRepository;
     private final RentalStatusRepository rentalStatusRepository;
+    private final StatusHistoryRepository statusHistoryRepository;
 
     public RentalController(CarRepository carRepository, UserRepository userRepository, RentalRepository rentalRepository,
-                            RentalStatusRepository rentalStatusRepository) {
+                            RentalStatusRepository rentalStatusRepository,
+                            StatusHistoryRepository statusHistoryRepository) {
         this.carRepository = carRepository;
         this.userRepository = userRepository;
         this.rentalRepository = rentalRepository;
         this.rentalStatusRepository = rentalStatusRepository;
+        this.statusHistoryRepository = statusHistoryRepository;
     }
 
     @PostMapping("add")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> addRental(@RequestBody @Valid AddCarRentalRequest request){
         Car car = carRepository.getCarById(request.getCarID());
+
+        StatusHistory statusHistory = new StatusHistory(
+                rentalStatusRepository.findByName(ERentalStatus.STATUS_PENDING),
+                request.getAddDate()
+        );
 
         rentalRepository.save(new Rental(
                 car,
@@ -40,7 +53,8 @@ public class RentalController {
                 request.getEndDate(),
                 request.getAddDate(),
                 Math.toIntExact((ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate())+1) * car.getPrice()),
-                rentalStatusRepository.findByName(ERentalStatus.STATUS_PENDING)
+                rentalStatusRepository.findByName(ERentalStatus.STATUS_PENDING),
+                Collections.singletonList(statusHistoryRepository.save(statusHistory))
         ));
 
         return new ResponseEntity<>("Rental added", HttpStatus.OK);
@@ -79,6 +93,9 @@ public class RentalController {
             if(rentalStatusRepository.existsById(statusID)){
                 Rental rental = rentalRepository.getReferenceById(id);
                 rental.setRentalStatus(rentalStatusRepository.getReferenceById(statusID));
+
+                StatusHistory newStatus = new StatusHistory(rentalStatusRepository.getReferenceById(statusID), LocalDate.now());
+                rental.getStatusHistory().add(statusHistoryRepository.save(newStatus));
                 rentalRepository.save(rental);
 
                 return new ResponseEntity<>("Rental status changed", HttpStatus.OK);
@@ -110,8 +127,21 @@ public class RentalController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteRental(@PathVariable("rentalID") Long rentalID){
         if(rentalRepository.existsById(rentalID)){
+            List<StatusHistory> historyList = new ArrayList<>(rentalRepository.getReferenceById(rentalID).getStatusHistory());
+            for (StatusHistory item : historyList) statusHistoryRepository.deleteById(item.getId());
+
             rentalRepository.deleteById(rentalID);
             return new ResponseEntity<>("Rent removed successfully", HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("history/{rentalID}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    public ResponseEntity<?> getRentalStatusHistory(@PathVariable("rentalID") Long rentalID){
+        if(rentalRepository.existsById(rentalID)){
+            return new ResponseEntity<>(rentalRepository.getReferenceById(rentalID).getStatusHistory(), HttpStatus.OK);
         }
 
         return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);

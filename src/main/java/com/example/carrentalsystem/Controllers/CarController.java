@@ -63,7 +63,8 @@ public class CarController {
             model = carModelRepository.save(new CarModel(carRequest.getModel()));
         }
 
-        FuelType fuelType = fuelTypeRepository.findById(carRequest.getFuelType()).get();
+        FuelType fuelType = fuelTypeRepository.findById(carRequest.getFuelType())
+                .orElseThrow(() -> new RuntimeException("Error: Fuel type is not found."));
 
         carRepository.save(new Car(
                 brand,
@@ -151,7 +152,8 @@ public class CarController {
             }
 
             if(!carRequest.getFuelType().equals(car.getFuelType().getId())){
-                car.setFuelType(fuelTypeRepository.findById(carRequest.getFuelType()).get());
+                car.setFuelType(fuelTypeRepository.findById(carRequest.getFuelType())
+                        .orElseThrow(() -> new RuntimeException("Error: Fuel type is not found.")));
             }
 
             carRepository.save(car);
