@@ -84,36 +84,42 @@ public class CarController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> changeCarImage(@RequestParam("myFile") MultipartFile file,
                                             @RequestParam("carID") Long carID) throws IOException {
-        Car car = carRepository.getCarById(carID);
-        Long imageID = car.getCarImage().getImageID();
+        if(carRepository.existsById(carID)){
+            Car car = carRepository.getCarById(carID);
+            Long imageID = car.getCarImage().getImageID();
 
-        CarImage carImage = carImageRepository.save(new CarImage(file.getBytes()));
-        car.setCarImage(carImage);
+            CarImage carImage = carImageRepository.save(new CarImage(file.getBytes()));
+            car.setCarImage(carImage);
 
-        // CarImage with ID = 1 is the default image for new cars. For this reason, it must be protected from deletion
-        if(imageID != 1) {
-            carImageRepository.deleteById(imageID);
+            // CarImage with ID = 1 is the default image for new cars. For this reason, it must be protected from deletion
+            if(imageID != 1) {
+                carImageRepository.deleteById(imageID);
+            }
+            carRepository.save(car);
+
+            return new ResponseEntity<>("Car photo changed", HttpStatus.OK);
         }
-        carRepository.save(car);
 
-        return new ResponseEntity<>("Car photo changed", HttpStatus.OK);
+        return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
     }
 
     @Transactional
     @PostMapping("edit")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> editCar(@RequestBody @Valid EditCarRequest carRequest){
-        Car car = carRepository.getCarById(carRequest.getId());
-        if(car != null){
+        if(carRepository.existsById(carRequest.getId())){
+            Car car = carRepository.getCarById(carRequest.getId());
+
             if(!carRequest.getBrand().equals(car.getBrand().getName())){
                 Brand brand = car.getBrand();
-                if(brandRepository.findByName(carRequest.getBrand()) == null){
+
+                if(!brandRepository.existsByName(carRequest.getBrand())){
                     car.setBrand(brandRepository.save(new Brand(carRequest.getBrand())));
                 } else {
                     car.setBrand(brandRepository.findByName(carRequest.getBrand()));
                 }
 
-                if(!carRepository.existsByBrand_Name(brand.getName())){
+                if(!carRepository.existsByBrandName(brand.getName())){
                     brandRepository.deleteByName(brand.getName());
                 }
             }
@@ -121,13 +127,13 @@ public class CarController {
             if(!carRequest.getModel().equals(car.getModel().getName())){
                 CarModel carModel = car.getModel();
 
-                if(carModelRepository.findByName(carRequest.getModel()) == null){
+                if(!carModelRepository.existsByName(carRequest.getModel())){
                     car.setModel(carModelRepository.save(new CarModel(carRequest.getModel())));
                 } else {
                     car.setModel(carModelRepository.findByName(carRequest.getModel()));
                 }
 
-                if(!carRepository.existsByModel_Name(carModel.getName())){
+                if(!carRepository.existsByModelName(carModel.getName())){
                     carModelRepository.deleteByName(carModel.getName());
                 }
             }
@@ -136,8 +142,8 @@ public class CarController {
                 car.setCapacity(carRequest.getCapacity());
             }
 
-            if(!carRequest.getHorsePower().equals(car.getHorse_power())){
-                car.setHorse_power(carRequest.getHorsePower());
+            if(!carRequest.getHorsePower().equals(car.getHorsePower())){
+                car.setHorsePower(carRequest.getHorsePower());
             }
 
             if(!carRequest.getYear().equals(car.getYear())){
@@ -167,9 +173,8 @@ public class CarController {
     @GetMapping("get/{carID}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getCar(@PathVariable("carID") Long carID){
-        Car car = carRepository.getCarById(carID);
-        if(car != null){
-            return ResponseEntity.ok(car);
+        if(carRepository.existsById(carID)){
+            return ResponseEntity.ok(carRepository.getCarById(carID));
         }
 
         return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
@@ -178,9 +183,10 @@ public class CarController {
     @PostMapping("status/{carID}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> changeCarStatus(@PathVariable("carID") Long carID){
-        Car car = carRepository.getCarById(carID);
-        if(car != null){
-            if(rentalRepository.findByRentalDateAndRentalStatus_Name(LocalDate.now(), RentalStatusEnum.STATUS_ACCEPTED).size() == 0){
+        if(carRepository.existsById(carID)){
+            Car car = carRepository.getCarById(carID);
+
+            if(!rentalRepository.existsByRentalDateAndRentalStatus(LocalDate.now(), RentalStatusEnum.STATUS_ACCEPTED)){
                 car.setAvailable(!car.isAvailable());
                 carRepository.save(car);
                 return new ResponseEntity<>("The availability of the car has been changed", HttpStatus.OK);
@@ -196,14 +202,15 @@ public class CarController {
     @DeleteMapping("delete/{carID}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteCar(@PathVariable("carID") Long carID){
-        Car car = carRepository.getCarById(carID);
-        if(car != null){
-            if(rentalRepository.findByCar_Id(car.getId()).size() == 0){
-                if(carRepository.findByModel_Name(car.getModel().getName()).size() == 1){
+        if(carRepository.existsById(carID)){
+            Car car = carRepository.getCarById(carID);
+
+            if(!rentalRepository.existsByCarId(car.getId())){
+                if(carRepository.countByModelName(car.getModel().getName()) == 1){
                     carModelRepository.deleteById(car.getModel().getId());
                 }
 
-                if(carRepository.findByBrand_Name(car.getBrand().getName()).size() == 1){
+                if(carRepository.countByBrandName(car.getBrand().getName()) == 1){
                     brandRepository.deleteById(car.getBrand().getId());
                 }
 

@@ -20,7 +20,7 @@ public class RentalStatusController {
 
     @GetMapping("list")
     public ResponseEntity<?> getRentalStatusList(){
-        if(rentalStatusRepository.findAll().size() > 0){
+        if(rentalStatusRepository.count() > 0){
             return ResponseEntity.ok(rentalStatusRepository.findAll());
         }
 

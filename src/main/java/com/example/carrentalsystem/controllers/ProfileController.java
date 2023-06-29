@@ -27,11 +27,15 @@ public class ProfileController {
     @PostMapping("change-password")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> changePassword(@RequestBody @Valid ChangePasswordRequest request){
-        User user = userRepository.getReferenceById(request.getUserID());
-        user.setPassword(encoder.encode(request.getNewPassword()));
-        userRepository.save(user);
+        if(userRepository.existsById(request.getUserID())){
+            User user = userRepository.getReferenceById(request.getUserID());
+            user.setPassword(encoder.encode(request.getNewPassword()));
+            userRepository.save(user);
 
-        return new ResponseEntity<>("Password changed", HttpStatus.OK);
+            return new ResponseEntity<>("Password changed", HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
     }
 
 }

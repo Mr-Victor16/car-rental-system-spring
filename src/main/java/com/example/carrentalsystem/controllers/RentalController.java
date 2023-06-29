@@ -41,21 +41,25 @@ public class RentalController {
     @PostMapping("add")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> addRental(@RequestBody @Valid AddCarRentalRequest request){
-        Car car = carRepository.getCarById(request.getCarID());
-        StatusHistory statusHistory = new StatusHistory(rentalStatusRepository.findByName(RentalStatusEnum.STATUS_PENDING), request.getAddDate());
+        if(carRepository.existsById(request.getCarID())){
+            Car car = carRepository.getCarById(request.getCarID());
+            StatusHistory statusHistory = new StatusHistory(rentalStatusRepository.findByName(RentalStatusEnum.STATUS_PENDING), request.getAddDate());
 
-        rentalRepository.save(new Rental(
-                car,
-                userRepository.getReferenceById(request.getUserID()),
-                request.getStartDate(),
-                request.getEndDate(),
-                request.getAddDate(),
-                Math.toIntExact((ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate())+1) * car.getPrice()),
-                rentalStatusRepository.findByName(RentalStatusEnum.STATUS_PENDING),
-                Collections.singletonList(statusHistoryRepository.save(statusHistory))
-        ));
+            rentalRepository.save(new Rental(
+                    car,
+                    userRepository.getReferenceById(request.getUserID()),
+                    request.getStartDate(),
+                    request.getEndDate(),
+                    request.getAddDate(),
+                    (ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate())+1) * car.getPrice(),
+                    rentalStatusRepository.findByName(RentalStatusEnum.STATUS_PENDING),
+                    Collections.singletonList(statusHistoryRepository.save(statusHistory))
+            ));
 
-        return new ResponseEntity<>("Rental added", HttpStatus.OK);
+            return new ResponseEntity<>("Rental added", HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("get/all")
@@ -68,7 +72,7 @@ public class RentalController {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> getUserRentals(@PathVariable("id") Long id){
         if(userRepository.existsById(id)){
-            return ResponseEntity.ok(rentalRepository.findByUser_Id(id));
+            return ResponseEntity.ok(rentalRepository.findByUserId(id));
         }
 
         return new ResponseEntity<>("No user found", HttpStatus.NOT_FOUND);
@@ -104,7 +108,7 @@ public class RentalController {
     public ResponseEntity<?> changeRentalInformation(@RequestBody @Valid EditCarRentalRequest request){
         if(rentalRepository.existsById(request.getRentId())){
             Rental rental = rentalRepository.getReferenceById(request.getRentId());
-            rental.setPrice(Math.toIntExact((ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate())+1) * rental.getCar().getPrice()));
+            rental.setPrice((ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate())+1) * rental.getCar().getPrice());
             rental.setStartDate(request.getStartDate());
             rental.setEndDate(request.getEndDate());
             rentalRepository.save(rental);

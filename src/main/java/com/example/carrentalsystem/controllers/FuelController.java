@@ -20,7 +20,7 @@ public class FuelController {
 
     @GetMapping("list")
     public ResponseEntity<?> getFuelList(){
-        if(fuelTypeRepository.findAll().size() > 0){
+        if(fuelTypeRepository.count() > 0){
             return ResponseEntity.ok(fuelTypeRepository.findAll());
         }
 

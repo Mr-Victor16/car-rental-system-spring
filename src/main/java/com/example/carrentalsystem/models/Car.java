@@ -33,7 +33,7 @@ public class Car {
     private FuelType fuelType;
 
     @NotNull
-    private Integer horse_power;
+    private Integer horsePower;
 
     @NotBlank
     private String capacity;
@@ -47,13 +47,13 @@ public class Car {
     @JoinColumn(name = "car_image_image_id")
     private CarImage carImage;
 
-    public Car(Brand brand, CarModel model, Integer year, Integer mileage, FuelType fuelType, Integer horse_power, String capacity, Integer price, boolean available, CarImage carImage) {
+    public Car(Brand brand, CarModel model, Integer year, Integer mileage, FuelType fuelType, Integer horsePower, String capacity, Integer price, boolean available, CarImage carImage) {
         this.brand = brand;
         this.model = model;
         this.year = year;
         this.mileage = mileage;
         this.fuelType = fuelType;
-        this.horse_power = horse_power;
+        this.horsePower = horsePower;
         this.capacity = capacity;
         this.price = price;
         this.available = available;

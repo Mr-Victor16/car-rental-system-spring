@@ -8,4 +8,6 @@ public interface CarModelRepository extends JpaRepository<CarModel, Long> {
 
     void deleteByName(String name);
 
+    boolean existsByName(String name);
+
 }

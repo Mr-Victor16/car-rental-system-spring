@@ -12,12 +12,12 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     List<Car> findByMileage(Integer mileage);
 
-    List<Car> findByModel_Name(String name);
+    long countByModelName(String name);
 
-    List<Car> findByBrand_Name(String name);
+    long countByBrandName(String name);
 
-    boolean existsByBrand_Name(String name);
+    boolean existsByBrandName(String name);
 
-    boolean existsByModel_Name(String name);
+    boolean existsByModelName(String name);
 
 }

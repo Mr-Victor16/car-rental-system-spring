@@ -114,7 +114,7 @@ class RentalControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        rentalID = rentalRepository.findByUser_Id(userID).get(0).getId();
+        rentalID = rentalRepository.findByUserId(userID).get(0).getId();
     }
 
     @Test()
@@ -178,7 +178,7 @@ class RentalControllerTest {
     @Test()
     @Order(10)
     void deleteAll() throws Exception {
-        List<Rental> rentalList = new ArrayList<>(rentalRepository.findByCar_Id(carID));
+        List<Rental> rentalList = new ArrayList<>(rentalRepository.findByCarId(carID));
         for(Rental rental : rentalList){
             mvc.perform(delete("/api/rental/delete/"+rental.getId())
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
@@ -186,7 +186,7 @@ class RentalControllerTest {
                     .andReturn();
         }
 
-        rentalList = new ArrayList<>(rentalRepository.findByUser_Id(userID));
+        rentalList = new ArrayList<>(rentalRepository.findByUserId(userID));
         for(Rental rental : rentalList){
             mvc.perform(delete("/api/rental/delete/"+rental.getId())
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
