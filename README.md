@@ -30,7 +30,12 @@ The frontend for this project can be found in the repository - [car-rental-syste
 + Database  
 Before starting the project, you should create a database and a database user. The data of the created database and user must be entered into the **application.properties** file:
 ```agsl
-spring.datasource.url=jdbc:mysql://localhost:3306/<database name>
-spring.datasource.username=<database username>
-spring.datasource.password=<database user password>
+spring.datasource.url=jdbc:mysql://localhost:3306/<database_name>
+spring.datasource.username=<database_username>
+spring.datasource.password=<database_user_password>
 ```
+
+## Login details
++ Administrator  
+**Username:** admin  
+**Password:** admin

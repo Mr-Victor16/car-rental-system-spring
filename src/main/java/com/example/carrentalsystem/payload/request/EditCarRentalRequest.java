@@ -10,9 +10,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class EditCarRentalRequest {
     @NotNull
-    private Long rentId;
-
-    @NotNull
     private LocalDate startDate;
 
     @NotNull

@@ -89,7 +89,7 @@ class RentalControllerTest {
         carRequest.setBrand("Audi");
         carRequest.setModel("A3");
 
-        mvc.perform(post("/api/cars/add").contentType(APPLICATION_JSON_VALUE)
+        mvc.perform(post("/api/car").contentType(APPLICATION_JSON_VALUE)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken)
                         .content(new ObjectMapper().writeValueAsString(carRequest)))
                 .andExpect(status().isOk())
@@ -103,7 +103,7 @@ class RentalControllerTest {
     void addRental() throws Exception {
         AddCarRentalRequest rentalRequest = new AddCarRentalRequest(carID, userID, LocalDate.now(), LocalDate.now(), LocalDate.now().plusDays(10));
 
-        mvc.perform(post("/api/rental/add").contentType(APPLICATION_JSON_VALUE)
+        mvc.perform(post("/api/rental").contentType(APPLICATION_JSON_VALUE)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken)
                         .content(
                             new ObjectMapper()
@@ -120,7 +120,7 @@ class RentalControllerTest {
     @Test()
     @Order(5)
     void getAllRentals() throws Exception {
-        mvc.perform(get("/api/rental/get/all")
+        mvc.perform(get("/api/rentals")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -129,7 +129,7 @@ class RentalControllerTest {
     @Test()
     @Order(6)
     void getUserRentals() throws Exception {
-        mvc.perform(get("/api/rental/get/user/"+userID).contentType(APPLICATION_JSON_VALUE)
+        mvc.perform(get("/api/rentals/"+500).contentType(APPLICATION_JSON_VALUE)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -138,7 +138,7 @@ class RentalControllerTest {
     @Test()
     @Order(7)
     void getRentalInfo() throws Exception {
-        mvc.perform(get("/api/rental/get/"+rentalID)
+        mvc.perform(get("/api/rental/"+rentalID).contentType(APPLICATION_JSON_VALUE)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -149,7 +149,7 @@ class RentalControllerTest {
     void changeStatus() throws Exception {
         Long statusID = rentalStatusRepository.findByName(RentalStatusEnum.STATUS_PENDING).getId();
 
-        mvc.perform(post("/api/rental/status/"+statusID+"/rental/"+rentalID)
+        mvc.perform(put("/api/rental/"+rentalID+"/status/"+statusID)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -159,11 +159,10 @@ class RentalControllerTest {
     @Order(9)
     void changeRentalInformation() throws Exception{
         EditCarRentalRequest carRentalRequest = new EditCarRentalRequest();
-        carRentalRequest.setRentId(rentalID);
         carRentalRequest.setStartDate(LocalDate.now().plusDays(1));
         carRentalRequest.setEndDate(LocalDate.now().plusDays(5));
 
-        mvc.perform(post("/api/rental/edit").contentType(APPLICATION_JSON_VALUE)
+        mvc.perform(put("/api/rental/"+rentalID).contentType(APPLICATION_JSON_VALUE)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken)
                         .content(
                         new ObjectMapper()
@@ -180,7 +179,7 @@ class RentalControllerTest {
     void deleteAll() throws Exception {
         List<Rental> rentalList = new ArrayList<>(rentalRepository.findByCarId(carID));
         for(Rental rental : rentalList){
-            mvc.perform(delete("/api/rental/delete/"+rental.getId())
+            mvc.perform(delete("/api/rental/"+rental.getId())
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                     .andExpect(status().isOk())
                     .andReturn();
@@ -188,13 +187,13 @@ class RentalControllerTest {
 
         rentalList = new ArrayList<>(rentalRepository.findByUserId(userID));
         for(Rental rental : rentalList){
-            mvc.perform(delete("/api/rental/delete/"+rental.getId())
+            mvc.perform(delete("/api/rental/"+rental.getId())
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                     .andExpect(status().isOk())
                     .andReturn();
         }
 
-        mvc.perform(delete("/api/cars/delete/"+carID)
+        mvc.perform(delete("/api/car/"+carID)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andReturn();

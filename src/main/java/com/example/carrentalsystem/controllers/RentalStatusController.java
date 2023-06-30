@@ -1,7 +1,6 @@
 package com.example.carrentalsystem.controllers;
 
-import com.example.carrentalsystem.repositories.RentalStatusRepository;
-import org.springframework.http.HttpStatus;
+import com.example.carrentalsystem.services.RentalStatusServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,20 +9,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/rental/status")
+@RequestMapping("/api/rental-statuses")
 public class RentalStatusController {
-    private final RentalStatusRepository rentalStatusRepository;
+    private final RentalStatusServiceImpl rentalStatusService;
 
-    public RentalStatusController(RentalStatusRepository rentalStatusRepository) {
-        this.rentalStatusRepository = rentalStatusRepository;
+    public RentalStatusController(RentalStatusServiceImpl rentalStatusService) {
+        this.rentalStatusService = rentalStatusService;
     }
 
-    @GetMapping("list")
+    @GetMapping
     public ResponseEntity<?> getRentalStatusList(){
-        if(rentalStatusRepository.count() > 0){
-            return ResponseEntity.ok(rentalStatusRepository.findAll());
-        }
-
-        return new ResponseEntity<>("No rental statuses found", HttpStatus.NOT_FOUND);
+        return ResponseEntity.ok(rentalStatusService.findAll());
     }
 }

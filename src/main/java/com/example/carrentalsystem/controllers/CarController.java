@@ -1,8 +1,10 @@
 package com.example.carrentalsystem.controllers;
 
-import com.example.carrentalsystem.models.*;
+import com.example.carrentalsystem.models.Car;
+import com.example.carrentalsystem.models.RentalStatusEnum;
 import com.example.carrentalsystem.payload.request.*;
-import com.example.carrentalsystem.repositories.*;
+import com.example.carrentalsystem.services.CarServiceImpl;
+import com.example.carrentalsystem.services.RentalServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,179 +18,60 @@ import java.time.LocalDate;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/cars")
+@RequestMapping("/api/car")
 public class CarController {
-    private final CarRepository carRepository;
-    private final BrandRepository brandRepository;
-    private final CarModelRepository carModelRepository;
-    private final FuelTypeRepository fuelTypeRepository;
-    private final CarImageRepository carImageRepository;
-    private final RentalRepository rentalRepository;
+    private final RentalServiceImpl rentalService;
+    private final CarServiceImpl carService;
 
-    public CarController(CarRepository carRepository, BrandRepository brandRepository, CarModelRepository carModelRepository,
-                         FuelTypeRepository fuelTypeRepository, CarImageRepository carImageRepository, RentalRepository rentalRepository) {
-        this.carRepository = carRepository;
-        this.brandRepository = brandRepository;
-        this.carModelRepository = carModelRepository;
-        this.fuelTypeRepository = fuelTypeRepository;
-        this.carImageRepository = carImageRepository;
-        this.rentalRepository = rentalRepository;
+    public CarController(RentalServiceImpl rentalService, CarServiceImpl carService) {
+        this.rentalService = rentalService;
+        this.carService = carService;
     }
 
-    @GetMapping("available")
-    public ResponseEntity<?> getAvailableCars(){
-        return ResponseEntity.ok(carRepository.findByAvailable(true));
-    }
-
-    @GetMapping("all")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getAllCars(){
-        return ResponseEntity.ok(carRepository.findAll());
-    }
-
-    @Transactional
-    @PostMapping("add")
+    @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> addCar(@RequestBody @Valid AddCarRequest carRequest){
-        Brand brand = brandRepository.findByName(carRequest.getBrand());
-        if (brand == null) {
-            brand = brandRepository.save(new Brand(carRequest.getBrand()));
-        }
-
-        CarModel model = carModelRepository.findByName(carRequest.getModel());
-        if (model == null) {
-            model = carModelRepository.save(new CarModel(carRequest.getModel()));
-        }
-
-        FuelType fuelType = fuelTypeRepository.findById(carRequest.getFuelType())
-                .orElseThrow(() -> new RuntimeException("Error: Fuel type is not found."));
-
-        carRepository.save(new Car(
-                brand,
-                model,
-                carRequest.getYear(),
-                carRequest.getMileage(),
-                fuelType,
-                carRequest.getHorsePower(),
-                carRequest.getCapacity(),
-                carRequest.getPrice(),
-                true,
-                carImageRepository.getByImageID(1L)
-            ));
-
-        return ResponseEntity.ok(carRepository.findByAvailable(true));
+        carService.add(carRequest);
+        return ResponseEntity.ok(carService.findAvailableCars());
     }
 
     @Transactional
-    @PostMapping("change-image")
+    @PutMapping("{carID}/image")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> changeCarImage(@RequestParam("myFile") MultipartFile file,
-                                            @RequestParam("carID") Long carID) throws IOException {
-        if(carRepository.existsById(carID)){
-            Car car = carRepository.getCarById(carID);
-            Long imageID = car.getCarImage().getImageID();
-
-            CarImage carImage = carImageRepository.save(new CarImage(file.getBytes()));
-            car.setCarImage(carImage);
-
-            // CarImage with ID = 1 is the default image for new cars. For this reason, it must be protected from deletion
-            if(imageID != 1) {
-                carImageRepository.deleteById(imageID);
-            }
-            carRepository.save(car);
-
+    public ResponseEntity<?> changeCarImage(@PathVariable("carID") Long carID, @RequestBody MultipartFile file) throws IOException {
+        if(carService.existsById(carID)){
+            carService.changeImage(carID, file);
             return new ResponseEntity<>("Car photo changed", HttpStatus.OK);
         }
 
         return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
     }
 
-    @Transactional
-    @PostMapping("edit")
+    @PutMapping("{carID}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> editCar(@RequestBody @Valid EditCarRequest carRequest){
-        if(carRepository.existsById(carRequest.getId())){
-            Car car = carRepository.getCarById(carRequest.getId());
-
-            if(!carRequest.getBrand().equals(car.getBrand().getName())){
-                Brand brand = car.getBrand();
-
-                if(!brandRepository.existsByName(carRequest.getBrand())){
-                    car.setBrand(brandRepository.save(new Brand(carRequest.getBrand())));
-                } else {
-                    car.setBrand(brandRepository.findByName(carRequest.getBrand()));
-                }
-
-                if(!carRepository.existsByBrandName(brand.getName())){
-                    brandRepository.deleteByName(brand.getName());
-                }
-            }
-
-            if(!carRequest.getModel().equals(car.getModel().getName())){
-                CarModel carModel = car.getModel();
-
-                if(!carModelRepository.existsByName(carRequest.getModel())){
-                    car.setModel(carModelRepository.save(new CarModel(carRequest.getModel())));
-                } else {
-                    car.setModel(carModelRepository.findByName(carRequest.getModel()));
-                }
-
-                if(!carRepository.existsByModelName(carModel.getName())){
-                    carModelRepository.deleteByName(carModel.getName());
-                }
-            }
-
-            if(!carRequest.getCapacity().equals(car.getCapacity())){
-                car.setCapacity(carRequest.getCapacity());
-            }
-
-            if(!carRequest.getHorsePower().equals(car.getHorsePower())){
-                car.setHorsePower(carRequest.getHorsePower());
-            }
-
-            if(!carRequest.getYear().equals(car.getYear())){
-                car.setYear(carRequest.getYear());
-            }
-
-            if(!carRequest.getMileage().equals(car.getMileage())){
-                car.setMileage(carRequest.getMileage());
-            }
-
-            if(!carRequest.getPrice().equals(car.getPrice())){
-                car.setPrice(carRequest.getPrice());
-            }
-
-            if(!carRequest.getFuelType().equals(car.getFuelType().getId())){
-                car.setFuelType(fuelTypeRepository.findById(carRequest.getFuelType())
-                        .orElseThrow(() -> new RuntimeException("Error: Fuel type is not found.")));
-            }
-
-            carRepository.save(car);
+    public ResponseEntity<?> editCar(@PathVariable("carID") Long carID, @RequestBody @Valid EditCarRequest carRequest){
+        if(carService.existsById(carID)){
+            carService.update(carID, carRequest);
             return new ResponseEntity<>("Car information changed", HttpStatus.OK);
         }
 
         return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping("get/{carID}")
+    @GetMapping("{carID}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getCar(@PathVariable("carID") Long carID){
-        if(carRepository.existsById(carID)){
-            return ResponseEntity.ok(carRepository.getCarById(carID));
-        }
-
-        return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
+        return ResponseEntity.ok(carService.getCarById(carID));
     }
 
-    @PostMapping("status/{carID}")
+    @PutMapping("{carID}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> changeCarStatus(@PathVariable("carID") Long carID){
-        if(carRepository.existsById(carID)){
-            Car car = carRepository.getCarById(carID);
+        if(carService.existsById(carID)){
+            Car car = carService.getCarById(carID);
 
-            if(!rentalRepository.existsByRentalDateAndRentalStatus(LocalDate.now(), RentalStatusEnum.STATUS_ACCEPTED)){
-                car.setAvailable(!car.isAvailable());
-                carRepository.save(car);
+            if(!rentalService.existsDateAndStatus(LocalDate.now(), RentalStatusEnum.STATUS_ACCEPTED)){
+                carService.changeStatus(car);
                 return new ResponseEntity<>("The availability of the car has been changed", HttpStatus.OK);
             }
 
@@ -198,28 +81,14 @@ public class CarController {
         return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
     }
 
-    @Transactional
-    @DeleteMapping("delete/{carID}")
+    @DeleteMapping("{carID}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteCar(@PathVariable("carID") Long carID){
-        if(carRepository.existsById(carID)){
-            Car car = carRepository.getCarById(carID);
+        if(carService.existsById(carID)){
+            Car car = carService.getCarById(carID);
 
-            if(!rentalRepository.existsByCarId(car.getId())){
-                if(carRepository.countByModelName(car.getModel().getName()) == 1){
-                    carModelRepository.deleteById(car.getModel().getId());
-                }
-
-                if(carRepository.countByBrandName(car.getBrand().getName()) == 1){
-                    brandRepository.deleteById(car.getBrand().getId());
-                }
-
-                // CarImage with ID = 1 is the default image for new cars. For this reason, it must be protected from deletion
-                if(car.getCarImage().getImageID() != 1){
-                    carImageRepository.deleteById(car.getCarImage().getImageID());
-                }
-
-                carRepository.deleteById(car.getId());
+            if(!rentalService.existsByCarId(car.getId())){
+                carService.delete(car);
                 return new ResponseEntity<>("Car removed successfully", HttpStatus.OK);
             }
 

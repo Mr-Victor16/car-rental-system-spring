@@ -61,7 +61,10 @@ public class WebSecurityConfig {
                         auth.requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/api/profile/**").permitAll()
                                 .requestMatchers("/api/rental/**").permitAll()
-                                .requestMatchers("/api/fuel/**").permitAll()
+                                .requestMatchers("/api/rentals/**").permitAll()
+                                .requestMatchers("/api/rental-statuses").permitAll()
+                                .requestMatchers("/api/fuels").permitAll()
+                                .requestMatchers("/api/car/**").permitAll()
                                 .requestMatchers("/api/cars/**").permitAll()
                                 .anyRequest().authenticated()
                 );

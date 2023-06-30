@@ -9,9 +9,6 @@ import jakarta.validation.constraints.*;
 @NoArgsConstructor
 public class EditCarRequest {
     @NotNull
-    private Long id;
-
-    @NotNull
     private Integer horsePower;
 
     @NotNull

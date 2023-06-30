@@ -66,11 +66,9 @@ public class ProfileControllerTest {
     @Test()
     @Order(3)
     void changeUserPassword() throws Exception {
-        ChangePasswordRequest passwordRequest = new ChangePasswordRequest(userID, "NewPassword");
-
-        mvc.perform(post("/api/profile/change-password").contentType(APPLICATION_JSON_VALUE)
+        mvc.perform(put("/api/profile/"+userID+"/password").contentType(APPLICATION_JSON_VALUE)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken)
-                        .content(new ObjectMapper().writeValueAsString(passwordRequest)))
+                        .content("NewPassword"))
                 .andExpect(status().isOk())
                 .andReturn();
     }
