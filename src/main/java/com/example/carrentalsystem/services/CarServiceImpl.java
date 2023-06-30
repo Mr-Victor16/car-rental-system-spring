@@ -117,11 +117,21 @@ public class CarServiceImpl implements CarService{
         Car car = carRepository.getCarById(carID);
 
         if(!carRequest.getBrand().equals(car.getBrand().getName())){
-            car.setBrand(setBrand(car.getBrand().getName(), carRequest.getBrand()));
+            Brand brand = car.getBrand();
+            car.setBrand(addBrand(carRequest.getBrand()));
+
+            if(!carRepository.existsByBrandName(brand.getName())){
+                brandRepository.deleteByName(brand.getName());
+            }
         }
 
         if(!carRequest.getModel().equals(car.getModel().getName())){
-            car.setModel(setModel(car.getModel().getName(), carRequest.getModel()));
+            CarModel carModel = car.getModel();
+            car.setModel(addModel(carRequest.getModel()));
+
+            if(!carRepository.existsByModelName(carModel.getName())){
+                carModelRepository.deleteByName(carModel.getName());
+            }
         }
 
         if(!carRequest.getCapacity().equals(car.getCapacity())){
@@ -150,22 +160,6 @@ public class CarServiceImpl implements CarService{
         }
 
         carRepository.save(car);
-    }
-
-    private Brand setBrand(String actualBrandName, String newBrandName) {
-        if(!carRepository.existsByBrandName(actualBrandName)){
-            brandRepository.deleteByName(actualBrandName);
-        }
-
-        return addBrand(newBrandName);
-    }
-
-    private CarModel setModel(String actualModelName, String newModelName){
-        if(!carRepository.existsByModelName(actualModelName)){
-            carModelRepository.deleteByName(actualModelName);
-        }
-
-        return addModel(newModelName);
     }
 
     private void deleteImage(Long imageID){
