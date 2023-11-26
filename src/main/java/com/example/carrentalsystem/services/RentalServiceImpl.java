@@ -4,6 +4,7 @@ import com.example.carrentalsystem.models.*;
 import com.example.carrentalsystem.payload.request.AddCarRentalRequest;
 import com.example.carrentalsystem.payload.request.EditCarRentalRequest;
 import com.example.carrentalsystem.repositories.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -13,21 +14,13 @@ import java.util.Collections;
 import java.util.List;
 
 @Service("rentalService")
+@RequiredArgsConstructor
 public class RentalServiceImpl implements RentalService {
     private final RentalRepository rentalRepository;
     private final StatusHistoryRepository statusHistoryRepository;
     private final RentalStatusServiceImpl rentalStatusService;
     private final UserServiceImpl userService;
     private final CarServiceImpl carService;
-
-    public RentalServiceImpl(RentalRepository rentalRepository, StatusHistoryRepository statusHistoryRepository,
-                             RentalStatusServiceImpl rentalStatusService, UserServiceImpl userService, CarServiceImpl carService) {
-        this.rentalRepository = rentalRepository;
-        this.statusHistoryRepository = statusHistoryRepository;
-        this.rentalStatusService = rentalStatusService;
-        this.userService = userService;
-        this.carService = carService;
-    }
 
     @Override
     public void changeStatus(Long statusID, Long rentalID) {

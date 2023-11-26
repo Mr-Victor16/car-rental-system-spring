@@ -7,6 +7,7 @@ import com.example.carrentalsystem.payload.response.LoginResponse;
 import com.example.carrentalsystem.repositories.UserRepository;
 import com.example.carrentalsystem.security.jwt.JWTUtils;
 import com.example.carrentalsystem.security.services.UserDetailsImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,21 +20,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service("userService")
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final JWTUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
     private final RoleServiceImpl roleService;
     private final PasswordEncoder encoder;
-
-    public UserServiceImpl(UserRepository userRepository, JWTUtils jwtUtils, AuthenticationManager authenticationManager,
-                           RoleServiceImpl roleService, PasswordEncoder encoder) {
-        this.userRepository = userRepository;
-        this.jwtUtils = jwtUtils;
-        this.authenticationManager = authenticationManager;
-        this.roleService = roleService;
-        this.encoder = encoder;
-    }
 
     @Override
     public boolean existsByUsername(String username) {

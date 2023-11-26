@@ -7,6 +7,7 @@ import com.example.carrentalsystem.repositories.BrandRepository;
 import com.example.carrentalsystem.repositories.CarImageRepository;
 import com.example.carrentalsystem.repositories.CarModelRepository;
 import com.example.carrentalsystem.repositories.CarRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,21 +17,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service("carService")
+@RequiredArgsConstructor
 public class CarServiceImpl implements CarService{
     private final CarRepository carRepository;
     private final BrandRepository brandRepository;
     private final CarModelRepository carModelRepository;
     private final CarImageRepository carImageRepository;
     private final FuelServiceImpl fuelService;
-
-    public CarServiceImpl(CarRepository carRepository, BrandRepository brandRepository, CarModelRepository carModelRepository,
-                          CarImageRepository carImageRepository, FuelServiceImpl fuelService) {
-        this.carRepository = carRepository;
-        this.brandRepository = brandRepository;
-        this.carModelRepository = carModelRepository;
-        this.carImageRepository = carImageRepository;
-        this.fuelService = fuelService;
-    }
 
     @Override
     public List<Car> findAvailableCars() {

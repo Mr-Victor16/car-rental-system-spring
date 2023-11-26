@@ -3,18 +3,16 @@ package com.example.carrentalsystem.services;
 import com.example.carrentalsystem.models.Role;
 import com.example.carrentalsystem.models.RoleEnum;
 import com.example.carrentalsystem.repositories.RoleRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Service("roleService")
+@RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
     private final RoleRepository roleRepository;
-
-    public RoleServiceImpl(RoleRepository roleRepository) {
-        this.roleRepository = roleRepository;
-    }
 
     @Override
     public Set<Role> setRole(Set<String> stringRoles) {

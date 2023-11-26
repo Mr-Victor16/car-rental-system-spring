@@ -3,17 +3,15 @@ package com.example.carrentalsystem.services;
 import com.example.carrentalsystem.models.RentalStatus;
 import com.example.carrentalsystem.models.RentalStatusEnum;
 import com.example.carrentalsystem.repositories.RentalStatusRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service("rentalStatusService")
+@RequiredArgsConstructor
 public class RentalStatusServiceImpl implements RentalStatusService{
     private final RentalStatusRepository rentalStatusRepository;
-
-    public RentalStatusServiceImpl(RentalStatusRepository rentalStatusRepository) {
-        this.rentalStatusRepository = rentalStatusRepository;
-    }
 
     @Override
     public List<RentalStatus> findAll() {

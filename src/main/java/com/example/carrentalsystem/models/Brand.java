@@ -1,5 +1,6 @@
 package com.example.carrentalsystem.models;
 
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -15,6 +16,7 @@ public class Brand {
     private Long id;
 
     @NotBlank
+    @Size(min = 3)
     private String name;
 
     public Brand(String name){
