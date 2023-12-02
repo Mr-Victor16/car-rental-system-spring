@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 @Entity
 @Table(name = "brands")
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 public class Brand {

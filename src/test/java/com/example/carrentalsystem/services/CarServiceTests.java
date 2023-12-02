@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -278,6 +279,78 @@ public class CarServiceTests {
         carService.changeImage(carId, file);
 
         verify(carImageRepository, never()).deleteById(anyLong());
+    }
+
+    //void delete(Car car);
+    //Car removal test with removal of car model and brand.
+    @Test
+    public void shouldDeleteCarWithModelAndBrand() {
+        Brand brand = new Brand(1L, "CarBrand");
+        CarModel model = new CarModel(1L, "CarModel");
+        FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_GASOLINE);
+        CarImage carImage = new CarImage(1L, "fileContent".getBytes());
+        Car car = new Car(1L, brand, model, 2022, 50000, fuelType, 200, "2.0L", 30000, true, carImage);
+
+        when(carRepository.findById(1L)).thenReturn(Optional.of(car));
+        when(carRepository.countByModelName(model.getName())).thenReturn(1L);
+        when(carRepository.countByBrandName(brand.getName())).thenReturn(1L);
+
+        carService.delete(car);
+
+        verify(carModelRepository, times(1)).deleteById(model.getId());
+        verify(brandRepository, times(1)).deleteById(brand.getId());
+        verify(carRepository, times(1)).deleteById(car.getId());
+    }
+
+    //void delete(Car car);
+    //Car removal test without removal of car models and brands (car model and brand is used by another car)
+    @Test
+    public void shouldDeleteCarWithoutBrandAndModel() {
+        Brand brand = new Brand(1L, "CarBrand");
+        CarModel model = new CarModel(1L, "CarModel");
+        FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_GASOLINE);
+        CarImage carImage = new CarImage(1L, "fileContent".getBytes());
+        Car car = new Car(1L, brand, model, 2022, 50000, fuelType, 200, "2.0L", 30000, true, carImage);
+
+        when(carRepository.findById(1L)).thenReturn(Optional.of(car));
+        when(carRepository.countByModelName(model.getName())).thenReturn(2L);
+        when(carRepository.countByBrandName(brand.getName())).thenReturn(2L);
+
+        carService.delete(car);
+
+        verify(carModelRepository, times(0)).deleteById(model.getId());
+        verify(brandRepository, times(0)).deleteById(brand.getId());
+        verify(carRepository, times(1)).deleteById(car.getId());
+    }
+
+    //void changeStatus(Car car);
+    //Car availability status change test
+    @Test
+    public void shouldChangeCarStatusToAvailable() {
+        Car car = new Car();
+        car.setAvailable(false);
+
+        when(carRepository.save(car)).thenReturn(car);
+
+        carService.changeStatus(car);
+
+        verify(carRepository, times(1)).save(car);
+        assert(car.isAvailable());
+    }
+
+    //void changeStatus(Car car);
+    //Car availability status change test
+    @Test
+    public void shouldChangeCarStatusToNotAvailable() {
+        Car car = new Car();
+        car.setAvailable(true);
+
+        when(carRepository.save(car)).thenReturn(car);
+
+        carService.changeStatus(car);
+
+        verify(carRepository, times(1)).save(car);
+        assert(!car.isAvailable());
     }
 
 }
