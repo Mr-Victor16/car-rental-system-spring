@@ -6,6 +6,7 @@ import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name = "cars")
+@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter

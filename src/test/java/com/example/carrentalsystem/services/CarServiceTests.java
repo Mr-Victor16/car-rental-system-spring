@@ -4,7 +4,9 @@ import com.example.carrentalsystem.models.*;
 import com.example.carrentalsystem.repositories.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -55,9 +57,9 @@ public class CarServiceTests {
     }
 
     //boolean existsById(Long carID);
-    //Test when car ID is invalid
+    //Test when car ID is null
     @Test
-    void existsByIdWhenCarIdIsInvalid(){
+    void existsByIdWhenCarIdIsNull(){
         boolean result = carService.existsById(null);
         assertFalse(result);
     }
@@ -181,7 +183,7 @@ public class CarServiceTests {
     }
 
     //List<Car> findAll();
-    //Test when no cars in the database
+    //Test when there no cars in the database
     @Test
     void findAllCarsWhenNoCarsInDatabase(){
         List<Car> expectedCars = Collections.emptyList();
@@ -191,6 +193,91 @@ public class CarServiceTests {
         List<Car> result = carService.findAll();
 
         assertEquals(expectedCars.size(), result.size());
+    }
+
+    //Car getCarById(Long carID);
+    //Test when no car with the given ID is found
+    @Test
+    void getCarByIdWhenNotFound(){
+        Long carID = 1L;
+
+        when(carRepository.getCarById(carID)).thenReturn(null);
+
+        Car result = carService.getCarById(carID);
+
+        assertNull(result);
+    }
+
+    //Car getCarById(Long carID);
+    //Test when given car ID is null
+    @Test
+    void getCarByIdWhenIdIsNull(){
+        Car result = carService.getCarById(null);
+        assertNull(result);
+    }
+
+    //Car getCarById(Long carID);
+    //Test when car ID is correct
+    @Test
+    void getCarById(){
+        Long carID = 1L;
+        Brand brand = new Brand("CarBrand");
+        CarModel model = new CarModel("CarModel");
+        FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_GASOLINE);
+        CarImage carImage = new CarImage(1L, "fileContent".getBytes());
+        Car expectedCar = new Car(1L, brand, model, 2022, 50000, fuelType, 200, "2.0L", 30000, true, carImage);
+
+        when(carRepository.getCarById(carID)).thenReturn(expectedCar);
+
+        Car result = carService.getCarById(carID);
+
+        assertNotNull(result);
+        assertEquals(expectedCar, result);
+    }
+
+
+    //void changeImage(Long carID, MultipartFile file) throws IOException;
+    //Test when method changes an image with deletion of previous image
+    @Test
+    public void shouldChangeImage() throws IOException {
+        Long carId = 1L;
+        MockMultipartFile file = new MockMultipartFile("file", "test.jpg", "image/jpeg", "content".getBytes());
+
+        Car existingCar = new Car();
+        existingCar.setCarImage(new CarImage(2L, "imageContent".getBytes()));
+
+        when(carRepository.getCarById(carId)).thenReturn(existingCar);
+        when(carImageRepository.save(any(CarImage.class))).thenAnswer(invocation -> {
+            CarImage savedImage = invocation.getArgument(0);
+            savedImage.setImageID(3L);
+            return savedImage;
+        });
+
+        carService.changeImage(carId, file);
+
+        verify(carRepository, times(1)).getCarById(carId);
+        verify(carImageRepository, times(1)).save(any(CarImage.class));
+        verify(carRepository, times(1)).save(existingCar);
+        verify(carImageRepository, times(1)).deleteById(2L);
+
+        assertEquals(3L, existingCar.getCarImage().getImageID());
+    }
+
+    //void changeImage(Long carID, MultipartFile file) throws IOException;
+    //Test when method changes an image, but doesn't delete previous image (because id = 1)
+    @Test
+    public void shouldNotDeleteDefaultImage() throws IOException {
+        Long carId = 1L;
+        MockMultipartFile file = new MockMultipartFile("file", "test.jpg", "image/jpeg", "content".getBytes());
+
+        Car existingCar = new Car();
+        existingCar.setCarImage(new CarImage(1L, "imageContent".getBytes()));
+
+        when(carRepository.getCarById(carId)).thenReturn(existingCar);
+
+        carService.changeImage(carId, file);
+
+        verify(carImageRepository, never()).deleteById(anyLong());
     }
 
 }
