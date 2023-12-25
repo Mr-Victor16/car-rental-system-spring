@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @Service("carService")
 @RequiredArgsConstructor
-public class CarServiceImpl implements CarService{
+public class CarServiceImpl implements CarService {
     private final CarRepository carRepository;
     private final BrandRepository brandRepository;
     private final CarModelRepository carModelRepository;
@@ -45,11 +45,11 @@ public class CarServiceImpl implements CarService{
         return carRepository.getCarById(carID);
     }
 
-    public Brand addBrand(String brandName) {
+    private Brand addBrand(String brandName) {
         return Optional.ofNullable(brandRepository.findByName(brandName)).orElseGet(() -> brandRepository.save(new Brand(brandName)));
     }
 
-    public CarModel addModel(String modelName) {
+    private CarModel addModel(String modelName) {
         return Optional.ofNullable(carModelRepository.findByName(modelName)).orElseGet(() -> carModelRepository.save(new CarModel(modelName)));
     }
 
@@ -59,8 +59,8 @@ public class CarServiceImpl implements CarService{
         Brand brand = addBrand(carRequest.getBrand());
         CarModel model = addModel(carRequest.getModel());
 
-        FuelType fuelType = fuelService.findById(carRequest.getFuelType())
-                .orElseThrow(() -> new RuntimeException("Error: Fuel type is not found."));
+        FuelType fuelType = fuelService.findById(carRequest.getFuelType()).orElseThrow(() -> new RuntimeException("Error: Fuel type is not found."));
+        CarImage carImage = carImageRepository.findById(1L).orElseThrow(() -> new RuntimeException("Error: Car image is not found"));
 
         carRepository.save(new Car(
                 brand,
@@ -72,7 +72,7 @@ public class CarServiceImpl implements CarService{
                 carRequest.getCapacity(),
                 carRequest.getPrice(),
                 true,
-                carImageRepository.getByImageID(1L)
+                carImage
         ));
     }
 

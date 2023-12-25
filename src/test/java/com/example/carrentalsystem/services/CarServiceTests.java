@@ -1,6 +1,8 @@
 package com.example.carrentalsystem.services;
 
 import com.example.carrentalsystem.models.*;
+import com.example.carrentalsystem.payload.request.AddCarRequest;
+import com.example.carrentalsystem.payload.request.EditCarRequest;
 import com.example.carrentalsystem.repositories.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,19 +72,15 @@ public class CarServiceTests {
     @Test
     void findAvailableCarsWithMixedAvailability(){
         Brand brand = new Brand("BrandName");
-        Brand brand1 = new Brand("BrandName1");
 
         CarModel model = new CarModel("ModelName");
-        CarModel model1 = new CarModel("ModelName1");
         CarModel model2 = new CarModel("ModelName2");
 
         CarImage carPhoto = new CarImage(1L, "fileContent".getBytes());
 
         FuelType diesel = new FuelType(FuelTypeEnum.FUEL_DIESEL);
-        FuelType gasoline = new FuelType(FuelTypeEnum.FUEL_GASOLINE);
 
         Car availableCar = new Car(brand, model, 1998, 350000, diesel, 110, "1.9 TDI", 200, true, carPhoto);
-        Car unavailableCar = new Car(brand1, model1, 2009, 198000, gasoline, 70, "1.4 TDI", 300, false, carPhoto);
         Car availableCar1 = new Car(brand, model2, 2003, 150000, diesel, 90, "1.9 TDI", 150, true, carPhoto);
 
         List<Car> availableCars = Arrays.asList(availableCar, availableCar1);
@@ -98,20 +96,6 @@ public class CarServiceTests {
     //Test when no cars with available status
     @Test
     void findAvailableCarsWhenNoCarsAvailable(){
-        Brand brand = new Brand("BrandName");
-        Brand brand1 = new Brand("BrandName1");
-
-        CarModel model = new CarModel("ModelName");
-        CarModel model1 = new CarModel("ModelName1");
-
-        CarImage carPhoto = new CarImage(1L, "fileContent".getBytes());
-
-        FuelType diesel = new FuelType(FuelTypeEnum.FUEL_DIESEL);
-        FuelType gasoline = new FuelType(FuelTypeEnum.FUEL_GASOLINE);
-
-        Car unavailableCar = new Car(brand, model, 1998, 350000, diesel, 110, "1.9 TDI", 200, false, carPhoto);
-        Car unavailableCar1 = new Car(brand1, model1, 2009, 198000, gasoline, 70, "1.4 TDI", 300, false, carPhoto);
-
         List<Car> expectedCars = Collections.emptyList();
 
         when(carRepository.findByAvailable(true)).thenReturn(expectedCars);
@@ -351,6 +335,205 @@ public class CarServiceTests {
 
         verify(carRepository, times(1)).save(car);
         assert(!car.isAvailable());
+    }
+
+    //void add(AddCarRequest carRequest)
+    //Add a car when all request data is correct
+    @Test
+    void addCarWhenAllDataCorrect() {
+        AddCarRequest carRequest = new AddCarRequest(150, 200, 2022, 50000, "brand", "model", "1.4", 1L);
+
+        Brand brand = new Brand(1L, carRequest.getBrand());
+        when(brandRepository.findByName(carRequest.getBrand())).thenReturn(brand);
+
+        CarModel model = new CarModel(1L, carRequest.getModel());
+        when(carModelRepository.findByName(carRequest.getModel())).thenReturn(model);
+
+        FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_DIESEL);
+        when(fuelTypeService.findById(1L)).thenReturn(Optional.of(fuelType));
+
+        CarImage carImage = new CarImage(1L, "image.jpg".getBytes());
+        when(carImageRepository.findById(1L)).thenReturn(Optional.of(carImage));
+
+        when(carRepository.save(any(Car.class))).thenReturn(new Car());
+
+        carService.add(carRequest);
+
+        verify(carRepository, times(1)).save(any(Car.class));
+    }
+
+    //void add(AddCarRequest carRequest)
+    //Add a car when the brand doesn't exist
+    @Test
+    void addCarWhenBrandDoesntExist() {
+        AddCarRequest carRequest = new AddCarRequest(150, 200, 2022, 50000, "brand", "model", "1.4", 1L);
+
+        when(brandRepository.findByName(carRequest.getBrand())).thenReturn(null);
+
+        CarModel model = new CarModel(1L, carRequest.getModel());
+        when(carModelRepository.findByName(carRequest.getModel())).thenReturn(model);
+
+        FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_DIESEL);
+        when(fuelTypeService.findById(1L)).thenReturn(Optional.of(fuelType));
+
+        CarImage carImage = new CarImage(1L, "image.jpg".getBytes());
+        when(carImageRepository.findById(1L)).thenReturn(Optional.of(carImage));
+
+        when(carRepository.save(any(Car.class))).thenReturn(new Car());
+
+        carService.add(carRequest);
+
+        verify(carRepository, times(1)).save(any(Car.class));
+    }
+
+    //void add(AddCarRequest carRequest)
+    //Add a car when the car model doesn't exist
+    @Test
+    void addCarWhenCarModelDoesntExist() {
+        AddCarRequest carRequest = new AddCarRequest(150, 200, 2022, 50000, "brand", "model", "1.4", 1L);
+
+        Brand brand = new Brand(1L, carRequest.getBrand());
+        when(brandRepository.findByName(carRequest.getBrand())).thenReturn(brand);
+
+        when(carModelRepository.findByName(carRequest.getModel())).thenReturn(null);
+
+        FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_DIESEL);
+        when(fuelTypeService.findById(1L)).thenReturn(Optional.of(fuelType));
+
+        CarImage carImage = new CarImage(1L, "image.jpg".getBytes());
+        when(carImageRepository.findById(1L)).thenReturn(Optional.of(carImage));
+
+        when(carRepository.save(any(Car.class))).thenReturn(new Car());
+
+        carService.add(carRequest);
+
+        verify(carRepository, times(1)).save(any(Car.class));
+    }
+
+    //void add(AddCarRequest carRequest)
+    //Add a car when the default car image doesn't exist (default car image ID = 1)
+    @Test
+    void addCarWhenCarImageNotFound() {
+        AddCarRequest carRequest = new AddCarRequest(150, 200, 2022, 50000, "brand", "model", "1.4", 1L);
+
+        Brand brand = new Brand(1L, carRequest.getBrand());
+        when(brandRepository.findByName(carRequest.getBrand())).thenReturn(brand);
+
+        CarModel model = new CarModel(1L, carRequest.getModel());
+        when(carModelRepository.findByName(carRequest.getModel())).thenReturn(model);
+
+        FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_DIESEL);
+        when(fuelTypeService.findById(1L)).thenReturn(Optional.of(fuelType));
+
+        when(carImageRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> carService.add(carRequest));
+    }
+
+    //void add(AddCarRequest carRequest)
+    //Add car when fuel type doesn't exist
+    @Test
+    void addCarWhenFuelTypeNotFound() {
+        AddCarRequest carRequest = new AddCarRequest(150, 200, 2022, 50000, "brand", "model", "1.4", 1L);
+
+        Brand brand = new Brand(1L, carRequest.getBrand());
+        when(brandRepository.findByName(carRequest.getBrand())).thenReturn(brand);
+
+        CarModel model = new CarModel(1L, carRequest.getModel());
+        when(carModelRepository.findByName(carRequest.getModel())).thenReturn(model);
+
+        when(carImageRepository.findById(carRequest.getFuelType())).thenReturn(Optional.empty());
+
+        CarImage carImage = new CarImage(1L, "image.jpg".getBytes());
+        when(carImageRepository.findById(1L)).thenReturn(Optional.of(carImage));
+
+        assertThrows(RuntimeException.class, () -> carService.add(carRequest));
+    }
+
+    //void update(Long carID, EditCarRequest carRequest)
+    //Update of car details, without deleting brand and car model
+    @Test
+    public void testUpdateCarWithoutDeletingBrandAndCarModel() {
+        //New car details
+        EditCarRequest carRequest = new EditCarRequest(150, 30000, 2022, 5000, "newBrand", "newModel", "2.5L", 1L);
+        FuelType fuelTypeRequest = new FuelType(FuelTypeEnum.FUEL_GASOLINE);
+        CarModel carModelRequest = new CarModel(2L, carRequest.getModel());
+        Brand brandRequest = new Brand(2L, carRequest.getBrand());
+
+        //Existing car details
+        Long carID = 1L;
+        Brand brand = new Brand(1L, "brand");
+        CarModel carModel = new CarModel(1L, "model");
+        FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_DIESEL);
+        Car car = new Car(brand, carModel, 2020, 20000, fuelType, 120, "2.0L", 25000, true, null);
+
+        when(fuelTypeService.findById(1L)).thenReturn(Optional.of(fuelTypeRequest));
+        when(carRepository.getCarById(carID)).thenReturn(car);
+        when(carRepository.save(any(Car.class))).thenReturn(car);
+        when(carModelRepository.findByName(carRequest.getModel())).thenReturn(carModelRequest);
+        when(brandRepository.findByName(carRequest.getBrand())).thenReturn(brandRequest);
+        when(carRepository.existsByBrandName(brand.getName())).thenReturn(true);
+        when(carRepository.existsByModelName(carModel.getName())).thenReturn(true);
+
+        carService.update(carID, carRequest);
+
+        verify(carRepository, times(1)).getCarById(carID);
+        verify(carRepository, times(1)).save(car);
+        verify(brandRepository, times(0)).deleteByName(anyString());
+        verify(carModelRepository, times(0)).deleteByName(anyString());
+        verify(fuelTypeRepository, times(1)).findById(anyLong());
+
+        assertEquals(carRequest.getHorsePower(), car.getHorsePower());
+        assertEquals(carRequest.getPrice(), car.getPrice());
+        assertEquals(carRequest.getYear(), car.getYear());
+        assertEquals(carRequest.getMileage(), car.getMileage());
+        assertEquals(carRequest.getBrand(), car.getBrand().getName());
+        assertEquals(carRequest.getModel(), car.getModel().getName());
+        assertEquals(carRequest.getCapacity(), car.getCapacity());
+        assertEquals(fuelTypeRequest.getName(), car.getFuelType().getName());
+    }
+
+    //void update(Long carID, EditCarRequest carRequest)
+    //Update of car details, with deleting brand and car model
+    @Test
+    public void testUpdateCarWithDeletingBrandAndCarModel() {
+        //New car details
+        EditCarRequest carRequest = new EditCarRequest(150, 30000, 2022, 5000, "newBrand", "newModel", "2.5L", 1L);
+        FuelType fuelTypeRequest = new FuelType(FuelTypeEnum.FUEL_GASOLINE);
+        CarModel carModelRequest = new CarModel(2L, carRequest.getModel());
+        Brand brandRequest = new Brand(2L, carRequest.getBrand());
+
+        //Existing car details
+        Long carID = 1L;
+        Brand brand = new Brand(1L, "brand");
+        CarModel carModel = new CarModel(1L, "model");
+        FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_DIESEL);
+        Car car = new Car(brand, carModel, 2020, 20000, fuelType, 120, "2.0L", 25000, true, null);
+
+        when(fuelTypeService.findById(1L)).thenReturn(Optional.of(fuelTypeRequest));
+        when(carRepository.getCarById(carID)).thenReturn(car);
+        when(carRepository.save(any(Car.class))).thenReturn(car);
+        when(carModelRepository.findByName(carRequest.getModel())).thenReturn(carModelRequest);
+        when(brandRepository.findByName(carRequest.getBrand())).thenReturn(brandRequest);
+        when(carRepository.existsByBrandName(brand.getName())).thenReturn(false);
+        when(carRepository.existsByModelName(carModel.getName())).thenReturn(false);
+
+        carService.update(carID, carRequest);
+
+        verify(carRepository, times(1)).getCarById(carID);
+        verify(carRepository, times(1)).save(car);
+        verify(brandRepository, times(1)).deleteByName(anyString());
+        verify(carModelRepository, times(1)).deleteByName(anyString());
+        verify(fuelTypeRepository, times(1)).findById(anyLong());
+
+        assertEquals(carRequest.getHorsePower(), car.getHorsePower());
+        assertEquals(carRequest.getPrice(), car.getPrice());
+        assertEquals(carRequest.getYear(), car.getYear());
+        assertEquals(carRequest.getMileage(), car.getMileage());
+        assertEquals(carRequest.getBrand(), car.getBrand().getName());
+        assertEquals(carRequest.getModel(), car.getModel().getName());
+        assertEquals(carRequest.getCapacity(), car.getCapacity());
+        assertEquals(fuelTypeRequest.getName(), car.getFuelType().getName());
     }
 
 }
