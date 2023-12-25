@@ -24,9 +24,11 @@ public class Car {
     private CarModel model;
 
     @NotNull
+    @Min(1970)
     private Integer year;
 
     @NotNull
+    @Min(1)
     private Integer mileage;
 
     @ManyToOne
@@ -34,12 +36,14 @@ public class Car {
     private FuelType fuelType;
 
     @NotNull
+    @Min(50)
     private Integer horsePower;
 
     @NotBlank
     private String capacity;
 
     @NotNull
+    @Min(50)
     private Integer price;
 
     private boolean available;

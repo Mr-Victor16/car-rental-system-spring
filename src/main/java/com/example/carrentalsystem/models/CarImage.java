@@ -10,7 +10,8 @@ import lombok.*;
 @Getter
 @Setter
 public class CarImage {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long imageID;
 
     @Lob

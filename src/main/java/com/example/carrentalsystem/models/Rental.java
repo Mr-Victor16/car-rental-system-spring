@@ -1,5 +1,6 @@
 package com.example.carrentalsystem.models;
 
+import jakarta.validation.constraints.Min;
 import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -32,6 +33,7 @@ public class Rental {
     private LocalDate addDate;
 
     @NotNull
+    @Min(50)
     private Long price;
 
     @ManyToOne
