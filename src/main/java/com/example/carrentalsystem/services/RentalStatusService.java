@@ -5,6 +5,7 @@ import com.example.carrentalsystem.models.RentalStatusEnum;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public interface RentalStatusService {
@@ -14,5 +15,5 @@ public interface RentalStatusService {
 
     RentalStatus findByName(RentalStatusEnum rentalStatusEnum);
 
-    RentalStatus getReferenceById(Long statusID);
+    Optional<RentalStatus> findById(Long rentalStatus);
 }

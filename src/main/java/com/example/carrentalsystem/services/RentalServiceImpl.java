@@ -25,7 +25,7 @@ public class RentalServiceImpl implements RentalService {
     @Override
     public void changeStatus(Long statusID, Long rentalID) {
         Rental rental = rentalRepository.getReferenceById(rentalID);
-        RentalStatus rentalStatus = rentalStatusService.getReferenceById(statusID);
+        RentalStatus rentalStatus = rentalStatusService.findById(statusID).orElseThrow(() -> new RuntimeException("Error: Rental status is not found"));
         rental.setRentalStatus(rentalStatus);
 
         StatusHistory newStatus = new StatusHistory(rentalStatus, LocalDate.now());
@@ -95,7 +95,7 @@ public class RentalServiceImpl implements RentalService {
         return rentalRepository.existsByCarId(id);
     }
 
-    public void deleteHistory(Long rentalID) {
+    private void deleteHistory(Long rentalID) {
         List<StatusHistory> historyList = new ArrayList<>(findById(rentalID).getStatusHistory());
 
         for (StatusHistory item : historyList) {
@@ -103,7 +103,7 @@ public class RentalServiceImpl implements RentalService {
         }
     }
 
-    public StatusHistory addHistory(StatusHistory status) {
+    private StatusHistory addHistory(StatusHistory status) {
         return statusHistoryRepository.save(status);
     }
 }

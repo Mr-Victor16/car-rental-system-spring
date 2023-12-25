@@ -220,7 +220,6 @@ public class CarServiceTests {
         assertEquals(expectedCar, result);
     }
 
-
     //void changeImage(Long carID, MultipartFile file) throws IOException;
     //Test when method changes an image with deletion of previous image
     @Test
@@ -442,7 +441,7 @@ public class CarServiceTests {
         CarModel model = new CarModel(1L, carRequest.getModel());
         when(carModelRepository.findByName(carRequest.getModel())).thenReturn(model);
 
-        when(carImageRepository.findById(carRequest.getFuelType())).thenReturn(Optional.empty());
+        when(fuelTypeRepository.findById(carRequest.getFuelType())).thenReturn(null);
 
         CarImage carImage = new CarImage(1L, "image.jpg".getBytes());
         when(carImageRepository.findById(1L)).thenReturn(Optional.of(carImage));

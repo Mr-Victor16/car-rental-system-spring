@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service("rentalStatusService")
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class RentalStatusServiceImpl implements RentalStatusService{
     }
 
     @Override
-    public RentalStatus getReferenceById(Long statusID) {
-        return rentalStatusRepository.getReferenceById(statusID);
+    public Optional<RentalStatus> findById(Long rentalStatus) {
+        return rentalStatusRepository.findById(rentalStatus);
     }
 }
