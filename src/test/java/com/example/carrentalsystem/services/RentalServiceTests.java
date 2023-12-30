@@ -1,11 +1,14 @@
 package com.example.carrentalsystem.services;
 
 import com.example.carrentalsystem.models.*;
+import com.example.carrentalsystem.payload.request.AddCarRentalRequest;
+import com.example.carrentalsystem.payload.request.EditCarRentalRequest;
 import com.example.carrentalsystem.repositories.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -19,34 +22,25 @@ public class RentalServiceTests {
     private RentalRepository rentalRepository;
     private StatusHistoryRepository statusHistoryRepository;
     private RentalStatusServiceImpl rentalStatusService;
-    private RentalStatusRepository rentalStatusRepository;
     private UserServiceImpl userService;
-    private UserRepository userRepository;
     private CarServiceImpl carService;
-    private CarRepository carRepository;
-    private BrandRepository brandRepository;
-    private CarModelRepository carModelRepository;
-    private CarImageRepository carImageRepository;
-    private FuelServiceImpl fuelTypeService;
-    private FuelTypeRepository fuelTypeRepository;
-    private RoleRepository roleRepository;
     private RoleServiceImpl roleService;
 
     @BeforeEach
     void setUp(){
         rentalRepository = mock(RentalRepository.class);
         statusHistoryRepository = mock(StatusHistoryRepository.class);
-        rentalStatusRepository = mock(RentalStatusRepository.class);
+        RentalStatusRepository rentalStatusRepository = mock(RentalStatusRepository.class);
         rentalStatusService = new RentalStatusServiceImpl(rentalStatusRepository);
-        userRepository = mock(UserRepository.class);
+        UserRepository userRepository = mock(UserRepository.class);
         userService = new UserServiceImpl(userRepository, null, null, roleService, null);
-        carRepository = mock(CarRepository.class);
-        brandRepository = mock(BrandRepository.class);
-        carModelRepository = mock(CarModelRepository.class);
-        carImageRepository = mock(CarImageRepository.class);
-        fuelTypeRepository = mock(FuelTypeRepository.class);
-        fuelTypeService = new FuelServiceImpl(fuelTypeRepository);
-        roleRepository = mock(RoleRepository.class);
+        CarRepository carRepository = mock(CarRepository.class);
+        BrandRepository brandRepository = mock(BrandRepository.class);
+        CarModelRepository carModelRepository = mock(CarModelRepository.class);
+        CarImageRepository carImageRepository = mock(CarImageRepository.class);
+        FuelTypeRepository fuelTypeRepository = mock(FuelTypeRepository.class);
+        FuelServiceImpl fuelTypeService = new FuelServiceImpl(fuelTypeRepository);
+        RoleRepository roleRepository = mock(RoleRepository.class);
         roleService = new RoleServiceImpl(roleRepository);
         carService = new CarServiceImpl(carRepository, brandRepository, carModelRepository, carImageRepository, fuelTypeService);
         rentalService = new RentalServiceImpl(rentalRepository, statusHistoryRepository, rentalStatusService, userService, carService);
@@ -344,6 +338,105 @@ public class RentalServiceTests {
     public void findByIdWhenRentalIDIsNull() {
         Rental result = rentalService.findById(null);
         assertNull(result);
+    }
+
+    //void add(AddCarRentalRequest request)
+    //Test method when all data is correct
+    @Test
+    public void testAddRental() {
+        AddCarRentalRequest request = new AddCarRentalRequest(1L, 2L, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 5), LocalDate.now());
+        Car car = new Car(1L, new Brand(1L, "CarBrand"), new CarModel(1L, "CarModel"), 2022, 50000, null, 200, "2.0L", 300, true, null);
+
+        when(carService.getCarById(1L)).thenReturn(car);
+        when(userService.getUserById(2L)).thenReturn(new User());
+        when(rentalStatusService.findByName(RentalStatusEnum.STATUS_PENDING)).thenReturn(new RentalStatus());
+        StatusHistory statusHistory = new StatusHistory(null, LocalDate.now());
+        when(statusHistoryRepository.save(statusHistory)).thenReturn(statusHistory);
+
+        rentalService.add(request);
+
+        verify(rentalRepository, times(1)).save(any(Rental.class));
+        verify(statusHistoryRepository, times(1)).save(any(StatusHistory.class));
+    }
+
+    //void delete(Long rentalID);
+    //Test method when rental has status history
+    @Test
+    public void testDeleteRentalWithStatusHistory() {
+        Long rentalId = 1L;
+
+        Rental rental = new Rental(new Car(), new User(), LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
+        List<StatusHistory> historyList = List.of(new StatusHistory(1L, new RentalStatus(RentalStatusEnum.STATUS_PENDING), LocalDate.now()));
+        rental.setStatusHistory(historyList);
+        
+        when(rentalService.findById(rentalId)).thenReturn(rental);
+        when(rentalRepository.findById(rentalId)).thenReturn(Optional.of(rental));
+
+        rentalService.delete(rentalId);
+
+        verify(rentalRepository, times(1)).getReferenceById(rentalId);
+        verify(statusHistoryRepository, times(1)).deleteById(anyLong());
+        verify(rentalRepository, times(1)).deleteById(rentalId);
+    }
+
+    //void delete(Long rentalID);
+    //Test method when rental hasn't status history
+    @Test
+    public void testDeleteRentalWithoutStatusHistory() {
+        Long rentalId = 1L;
+
+        Rental rental = new Rental(new Car(), new User(), LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
+
+        when(rentalService.findById(rentalId)).thenReturn(rental);
+        when(rentalRepository.findById(rentalId)).thenReturn(Optional.of(rental));
+
+        rentalService.delete(rentalId);
+
+        verify(rentalRepository, times(1)).getReferenceById(rentalId);
+        verify(statusHistoryRepository, times(0)).deleteById(anyLong());
+        verify(rentalRepository, times(1)).deleteById(rentalId);
+    }
+
+    //void update(Long rentalID, EditCarRentalRequest request);
+    //Test method when all specified data are OK
+    @Test
+    public void testUpdateWhenAllDataIsOK(){
+        Brand brand = new Brand(1L, "CarBrand");
+        CarModel model = new CarModel(1L, "CarModel");
+        FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_GASOLINE);
+        Car car = new Car(1L, brand, model, 2022, 50000, fuelType, 200, "2.0L", 30000, true, null);
+        Rental rental = new Rental(car, new User(), LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
+
+        EditCarRentalRequest request = new EditCarRentalRequest(LocalDate.of(2023,10,12), LocalDate.of(2023,10,15));
+
+        when(rentalRepository.getReferenceById(1L)).thenReturn(rental);
+
+        rentalService.update(1L, request);
+
+        assertEquals(request.getStartDate(), rental.getStartDate());
+        assertEquals(request.getEndDate(), rental.getEndDate());
+        assertEquals((ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1) * car.getPrice(), rental.getPrice());
+    }
+
+    //void update(Long rentalID, EditCarRentalRequest request);
+    //Test method when start and end date are the same
+    @Test
+    public void testUpdateWhenStartAndEndDatesAreTheSame(){
+        Brand brand = new Brand(1L, "CarBrand");
+        CarModel model = new CarModel(1L, "CarModel");
+        FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_GASOLINE);
+        Car car = new Car(1L, brand, model, 2022, 50000, fuelType, 200, "2.0L", 30000, true, null);
+        Rental rental = new Rental(car, new User(), LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
+
+        EditCarRentalRequest request = new EditCarRentalRequest(LocalDate.of(2023,10,12), LocalDate.of(2023,10,12));
+
+        when(rentalRepository.getReferenceById(1L)).thenReturn(rental);
+
+        rentalService.update(1L, request);
+
+        assertEquals(request.getStartDate(), rental.getStartDate());
+        assertEquals(request.getEndDate(), rental.getEndDate());
+        assertEquals(car.getPrice().longValue(), rental.getPrice());
     }
 
 }

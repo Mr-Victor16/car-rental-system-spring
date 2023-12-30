@@ -28,8 +28,12 @@ public class RentalController {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> addRental(@RequestBody @Valid AddCarRentalRequest request){
         if(carService.existsById(request.getCarID())){
-            rentalService.add(request);
-            return new ResponseEntity<>("Rental added", HttpStatus.OK);
+            if((request.getEndDate().isAfter(request.getStartDate())) || (request.getEndDate().isEqual(request.getStartDate()))) {
+                rentalService.add(request);
+                return new ResponseEntity<>("Rental added", HttpStatus.OK);
+            }
+
+            return new ResponseEntity<>("Incorrect date range", HttpStatus.BAD_REQUEST);
         }
 
         return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
@@ -60,8 +64,12 @@ public class RentalController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> changeRentalInformation(@PathVariable("rentalID") Long rentalID, @RequestBody @Valid EditCarRentalRequest request){
         if(rentalService.existsById(rentalID)){
-            rentalService.update(rentalID, request);
-            return new ResponseEntity<>("Rent details changed", HttpStatus.OK);
+            if((request.getEndDate().isAfter(request.getStartDate())) || (request.getEndDate().isEqual(request.getStartDate()))) {
+                rentalService.update(rentalID, request);
+                return new ResponseEntity<>("Rent details changed", HttpStatus.OK);
+            }
+
+            return new ResponseEntity<>("Incorrect date range", HttpStatus.BAD_REQUEST);
         }
 
         return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);
