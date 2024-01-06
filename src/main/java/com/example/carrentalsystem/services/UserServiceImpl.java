@@ -1,9 +1,14 @@
 package com.example.carrentalsystem.services;
 
+import com.example.carrentalsystem.models.Rental;
+import com.example.carrentalsystem.models.Role;
+import com.example.carrentalsystem.models.RoleEnum;
 import com.example.carrentalsystem.models.User;
+import com.example.carrentalsystem.payload.request.AddUserRequest;
 import com.example.carrentalsystem.payload.request.LoginRequest;
 import com.example.carrentalsystem.payload.request.SignupRequest;
 import com.example.carrentalsystem.payload.response.LoginResponse;
+import com.example.carrentalsystem.repositories.RoleRepository;
 import com.example.carrentalsystem.repositories.UserRepository;
 import com.example.carrentalsystem.security.jwt.JWTUtils;
 import com.example.carrentalsystem.security.services.UserDetailsImpl;
@@ -16,7 +21,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service("userService")
@@ -25,8 +32,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final JWTUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
-    private final RoleServiceImpl roleService;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
+    private final RentalServiceImpl rentalService;
 
     @Override
     public boolean existsByUsername(String username) {
@@ -55,9 +63,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void add(SignupRequest signUpRequest) {
+    public void add(AddUserRequest signUpRequest) {
         User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()));
-        user.setRoles(roleService.setRole(signUpRequest.getRole()));
+        user.setRoles(setRole(signUpRequest.getRole()));
+        userRepository.save(user);
+    }
+
+    @Override
+    public void register(SignupRequest signUpRequest) {
+        User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()));
         userRepository.save(user);
     }
 
@@ -77,4 +91,64 @@ public class UserServiceImpl implements UserService {
     public User getUserById(Long userID) {
         return userRepository.getReferenceById(userID);
     }
+
+    @Override
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public void delete(Long userID) {
+        List<Rental> userRentals = rentalService.findByUserId(userID);
+
+        if(!userRentals.isEmpty()){
+            for (Rental rentalItem : userRentals){
+                rentalService.delete(rentalItem.getId());
+            }
+        }
+
+        userRepository.deleteById(userID);
+    }
+
+    @Override
+    public boolean verifyUserPassword(Long userID, String currentPassword) {
+        return encoder.matches(currentPassword, getUserById(userID).getPassword());
+    }
+
+    @Override
+    public void changeRole(Long userID, Boolean role) {
+        User user = getUserById(userID);
+
+        //Role: False - USER, True - ADMIN
+        if(role) user.setRoles(setRole(new HashSet<>(List.of("admin"))));
+        else user.setRoles(setRole(new HashSet<>(List.of("user"))));
+
+        userRepository.save(user);
+    }
+
+    @Override
+    public Set<Role> setRole(Set<String> stringRoles) {
+        Set<Role> roles = new HashSet<>();
+
+        if(stringRoles == null) {
+            Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
+        } else {
+            stringRoles.forEach(role -> {
+                if(role.equals("admin")) {
+                    Role adminRole = roleRepository.findByName(RoleEnum.ROLE_ADMIN)
+                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    roles.add(adminRole);
+                } else {
+                    Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    roles.add(userRole);
+                }
+            });
+        }
+
+        return roles;
+    }
+
 }

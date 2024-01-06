@@ -24,7 +24,8 @@ The frontend for this project can be found in the repository - [car-rental-syste
 ####
 + **Administrator:**
   + manage cars (show information, edit, change photo, delete and change visibility),
-  + manage rentals (show information, edit, delete, change status).
+  + manage rentals (show information, edit, delete, change status),
+  + manage users (show list, add, delete).
 
 ## Configuration
 + Database  

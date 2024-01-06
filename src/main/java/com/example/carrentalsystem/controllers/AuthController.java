@@ -23,7 +23,7 @@ public class AuthController {
             return ResponseEntity.ok(userService.authenticate(loginRequest));
         }
 
-        return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("Incorrect login details", HttpStatus.UNAUTHORIZED);
     }
 
     @PostMapping("/signup")
@@ -36,7 +36,7 @@ public class AuthController {
             return new ResponseEntity<>("Email address already in use", HttpStatus.CONFLICT);
         }
 
-        userService.add(signUpRequest);
+        userService.register(signUpRequest);
         return new ResponseEntity<>("User added", HttpStatus.OK);
     }
 

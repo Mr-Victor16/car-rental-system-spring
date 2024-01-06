@@ -22,7 +22,6 @@ public class RentalServiceTests {
     private RentalStatusServiceImpl rentalStatusService;
     private UserServiceImpl userService;
     private CarServiceImpl carService;
-    private RoleServiceImpl roleService;
 
     @BeforeEach
     void setUp(){
@@ -31,15 +30,14 @@ public class RentalServiceTests {
         RentalStatusRepository rentalStatusRepository = mock(RentalStatusRepository.class);
         rentalStatusService = new RentalStatusServiceImpl(rentalStatusRepository);
         UserRepository userRepository = mock(UserRepository.class);
-        userService = new UserServiceImpl(userRepository, null, null, roleService, null);
+        RoleRepository roleRepository = mock(RoleRepository.class);
+        userService = new UserServiceImpl(userRepository, null, null, roleRepository, null, null);
         CarRepository carRepository = mock(CarRepository.class);
         BrandRepository brandRepository = mock(BrandRepository.class);
         CarModelRepository carModelRepository = mock(CarModelRepository.class);
         CarImageRepository carImageRepository = mock(CarImageRepository.class);
         FuelTypeRepository fuelTypeRepository = mock(FuelTypeRepository.class);
         FuelServiceImpl fuelTypeService = new FuelServiceImpl(fuelTypeRepository);
-        RoleRepository roleRepository = mock(RoleRepository.class);
-        roleService = new RoleServiceImpl(roleRepository);
         carService = new CarServiceImpl(carRepository, brandRepository, carModelRepository, carImageRepository, fuelTypeService);
         rentalService = new RentalServiceImpl(rentalRepository, statusHistoryRepository, rentalStatusService, userService, carService);
     }
