@@ -17,10 +17,10 @@ The frontend for this project can be found in the repository - [car-rental-syste
   + login and registration in the system.
 ####
 + **User:**
-  + car rental,
-  + show a list of your rentals,
+  + rent a car,
+  + show a list of rentals,
   + check the current rental status and rental status history,
-  + show your simple profile and change your account password.
+  + show simple profile and change account password.
 ####
 + **Administrator:**
   + manage cars (show information, edit, change photo, delete and change visibility),

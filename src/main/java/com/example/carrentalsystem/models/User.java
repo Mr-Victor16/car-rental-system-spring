@@ -15,6 +15,7 @@ import java.util.Set;
             @UniqueConstraint(columnNames = "email")
 })
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 public class User {
