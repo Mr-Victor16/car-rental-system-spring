@@ -28,7 +28,7 @@ The frontend for this project can be found in the repository - [car-rental-syste
   + manage users (show list, add, delete, change role).
 
 ##  Database schema
-![img.png](img.png)
+![db_schema](https://github.com/Mr-Victor16/car-rental-system-spring/assets/101965882/e60217a6-8925-4104-8258-f1e4d6d26f96)
 _The schema was created using Apache Workbench._
 
 ## Configuration
