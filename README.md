@@ -27,6 +27,10 @@ The frontend for this project can be found in the repository - [car-rental-syste
   + manage rentals (show information, edit, delete, change status),
   + manage users (show list, add, delete, change role).
 
+##  Database schema
+![img.png](img.png)
+_The schema was created using Apache Workbench._
+
 ## Configuration
 + Database  
 Before starting the project, you should create a database and a database user. The data of the created database and user must be entered into the **application.properties** file:
