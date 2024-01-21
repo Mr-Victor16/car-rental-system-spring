@@ -22,9 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service("userService")
@@ -64,9 +62,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void add(AddUserRequest signUpRequest) {
-        User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()));
-        user.setRoles(setRole(signUpRequest.getRole()));
+    public void add(AddUserRequest addUserRequest) {
+        User user = new User(
+                addUserRequest.getUsername(),
+                addUserRequest.getEmail(),
+                encoder.encode(addUserRequest.getPassword()),
+                setRole(addUserRequest.getRole())
+        );
+
         userRepository.save(user);
     }
 
@@ -122,35 +125,23 @@ public class UserServiceImpl implements UserService {
         User user = getUserById(userID);
 
         //Role: False - USER, True - ADMIN
-        if(role) user.setRoles(setRole(new HashSet<>(List.of("admin"))));
-        else user.setRoles(setRole(new HashSet<>(List.of("user"))));
+        if(role) user.setRole(setRole("admin"));
+        else user.setRole(setRole("user"));
 
         userRepository.save(user);
     }
 
     @Override
-    public Set<Role> setRole(Set<String> stringRoles) {
-        Set<Role> roles = new HashSet<>();
-
-        if(stringRoles == null) {
-            Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            roles.add(userRole);
+    public Role setRole(String stringRole) {
+        if(stringRole == null) {
+            return roleRepository.findByName(RoleEnum.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
         } else {
-            stringRoles.forEach(role -> {
-                if(role.equals("admin")) {
-                    Role adminRole = roleRepository.findByName(RoleEnum.ROLE_ADMIN)
-                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                    roles.add(adminRole);
-                } else {
-                    Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
-                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                    roles.add(userRole);
-                }
-            });
+            if(stringRole.equals("admin")) {
+                return roleRepository.findByName(RoleEnum.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            } else {
+                return roleRepository.findByName(RoleEnum.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            }
         }
-
-        return roles;
     }
 
 }

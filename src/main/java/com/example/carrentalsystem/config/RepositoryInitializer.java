@@ -12,8 +12,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashSet;
-import java.util.Set;
 
 @Configuration
 public class RepositoryInitializer {
@@ -56,21 +54,13 @@ public class RepositoryInitializer {
             }
 
             if(carImageRepository.findAll().isEmpty()){
-                carImageRepository.save(
-                        new CarImage(
-                                imageFromURLToByteArray(new URL("https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"))
-                        )
-                );
+                carImageRepository.save(new CarImage(imageFromURLToByteArray(new URL("https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"))));
             }
 
             if(userRepository.findAll().isEmpty()){
-                User user = new User("admin", "admin@admin.pl", encoder.encode("admin"));
-                Set<Role> roles = new HashSet<>();
-
                 Role adminRole = roleRepository.findByName(RoleEnum.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
-                roles.add(adminRole);
+                User user = new User("admin", "admin@admin.pl", encoder.encode("admin"), adminRole);
 
-                user.setRoles(roles);
                 userRepository.save(user);
             }
         };

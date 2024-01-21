@@ -9,7 +9,6 @@ import com.example.carrentalsystem.payload.response.LoginResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 public interface UserService {
@@ -37,5 +36,5 @@ public interface UserService {
 
     void changeRole(Long userID, Boolean role);
 
-    Set<Role> setRole(Set<String> stringRoles);
+    Role setRole(String stringRole);
 }

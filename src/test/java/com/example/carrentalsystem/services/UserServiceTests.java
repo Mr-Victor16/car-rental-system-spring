@@ -52,20 +52,18 @@ public class UserServiceTests {
         Role userRole = new Role(RoleEnum.ROLE_USER);
         when(roleRepository.findByName(RoleEnum.ROLE_USER)).thenReturn(Optional.of(userRole));
 
-        Set<Role> resultRoles = userService.setRole(null);
+        Role resultRole = userService.setRole(null);
 
-        assertEquals(1, resultRoles.size());
-        assertTrue(resultRoles.contains(userRole));
+        assertEquals(resultRole, userRole);
     }
 
     //Set<Role> setRole(Set<String> stringRoles);
     //Test whether the method correctly handles the absence of found roles in the repository.
     @Test
     public void testSetRoleWithMissingRoles(){
-        Set<String> roles = new HashSet<>(Collections.singleton(""));
         when(roleRepository.findByName(any(RoleEnum.class))).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> userService.setRole(roles));
+        assertThrows(RuntimeException.class, () -> userService.setRole(""));
     }
 
     //Set<Role> setRole(Set<String> stringRoles);
@@ -74,12 +72,10 @@ public class UserServiceTests {
     public void testSetRoleWithUnknownRole(){
         Role userRole = new Role(RoleEnum.ROLE_USER);
         when(roleRepository.findByName(RoleEnum.ROLE_USER)).thenReturn(Optional.of(userRole));
-        Set<String> roles = new HashSet<>(Collections.singleton("moderator"));
 
-        Set<Role> resultRoles = userService.setRole(roles);
+        Role resultRole = userService.setRole("moderator");
 
-        assertEquals(1, resultRoles.size());
-        assertTrue(resultRoles.contains(userRole));
+        assertEquals(resultRole, userRole);
     }
 
     //Set<Role> setRole(Set<String> stringRoles);
@@ -88,12 +84,10 @@ public class UserServiceTests {
     public void testSetRoleWithAdminRole(){
         Role adminRole = new Role(RoleEnum.ROLE_ADMIN);
         when(roleRepository.findByName(RoleEnum.ROLE_ADMIN)).thenReturn(Optional.of(adminRole));
-        Set<String> roles = new HashSet<>(Collections.singleton("admin"));
 
-        Set<Role> resultRoles = userService.setRole(roles);
+        Role resultRole = userService.setRole("admin");
 
-        assertEquals(1, resultRoles.size());
-        assertTrue(resultRoles.contains(adminRole));
+        assertEquals(resultRole, adminRole);
     }
 
     //Set<Role> setRole(Set<String> stringRoles);
@@ -102,12 +96,10 @@ public class UserServiceTests {
     public void testSetRoleWithUserRole(){
         Role userRole = new Role(RoleEnum.ROLE_USER);
         when(roleRepository.findByName(RoleEnum.ROLE_USER)).thenReturn(Optional.of(userRole));
-        Set<String> roles = new HashSet<>(Collections.singleton("user"));
 
-        Set<Role> resultRoles = userService.setRole(roles);
+        Role resultRole = userService.setRole("user");
 
-        assertEquals(1, resultRoles.size());
-        assertTrue(resultRoles.contains(userRole));
+        assertEquals(resultRole, userRole);
     }
 
     //void changeRole(Long userID, Boolean role);
@@ -116,16 +108,13 @@ public class UserServiceTests {
     public void testChangeRoleToUser(){
         Long userID = 1L;
 
-        Set<Role> oldRoles = new HashSet<>();
-        oldRoles.add(new Role(RoleEnum.ROLE_ADMIN));
-        User existingUser = new User(userID,"username", "email@email.com", "password", oldRoles);
+        Role oldRole = new Role(RoleEnum.ROLE_ADMIN);
+        User existingUser = new User(userID,"username", "email@email.com", "password", oldRole);
         when(userRepository.findById(userID)).thenReturn(Optional.of(existingUser));
 
         Role newRole = new Role(RoleEnum.ROLE_USER);
         when(roleRepository.findByName(RoleEnum.ROLE_USER)).thenReturn(Optional.of(newRole));
 
-        Set<Role> userRoles = new HashSet<>();
-        userRoles.add(newRole);
         when(userService.getUserById(userID)).thenReturn(existingUser);
 
         // False = USER
@@ -133,7 +122,7 @@ public class UserServiceTests {
 
         verify(userRepository, times(1)).getReferenceById(userID);
         verify(userRepository, times(1)).save(existingUser);
-        assertEquals(userRoles, existingUser.getRoles());
+        assertEquals(newRole, existingUser.getRole());
     }
 
     //void changeRole(Long userID, Boolean role);
@@ -142,16 +131,13 @@ public class UserServiceTests {
     public void testChangeRoleToAdmin(){
         Long userID = 1L;
 
-        Set<Role> oldRoles = new HashSet<>();
-        oldRoles.add(new Role(RoleEnum.ROLE_USER));
-        User existingUser = new User(userID,"username", "email@email.com", "password", oldRoles);
+        Role oldRole = new Role(RoleEnum.ROLE_USER);
+        User existingUser = new User(userID,"username", "email@email.com", "password", oldRole);
         when(userRepository.findById(userID)).thenReturn(Optional.of(existingUser));
 
         Role newRole = new Role(RoleEnum.ROLE_ADMIN);
         when(roleRepository.findByName(RoleEnum.ROLE_ADMIN)).thenReturn(Optional.of(newRole));
 
-        Set<Role> userRoles = new HashSet<>();
-        userRoles.add(newRole);
         when(userService.getUserById(userID)).thenReturn(existingUser);
 
         // True = ADMIN
@@ -159,7 +145,7 @@ public class UserServiceTests {
 
         verify(userRepository, times(1)).getReferenceById(userID);
         verify(userRepository, times(1)).save(existingUser);
-        assertEquals(userRoles, existingUser.getRoles());
+        assertEquals(newRole, existingUser.getRole());
     }
 
     //boolean verifyUserPassword(Long userID, String currentPassword);
@@ -246,9 +232,8 @@ public class UserServiceTests {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
         when(jwtUtils.generateJwtToken(authentication)).thenReturn(token);
 
-        Set<Role> roles = new HashSet<>();
-        roles.add(new Role(RoleEnum.ROLE_USER));
-        User existingUser = new User(1L, "username", "user@email.com", "encodedPassword", roles);
+        Role role = new Role(RoleEnum.ROLE_USER);
+        User existingUser = new User(1L, "username", "user@email.com", "encodedPassword", role);
         UserDetailsImpl userDetails = UserDetailsImpl.build(existingUser);
         when(authentication.getPrincipal()).thenReturn(userDetails);
 
