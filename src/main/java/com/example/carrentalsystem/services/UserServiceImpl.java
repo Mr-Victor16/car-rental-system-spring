@@ -1,6 +1,5 @@
 package com.example.carrentalsystem.services;
 
-import com.example.carrentalsystem.models.Rental;
 import com.example.carrentalsystem.models.Role;
 import com.example.carrentalsystem.models.RoleEnum;
 import com.example.carrentalsystem.models.User;
@@ -33,7 +32,6 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
-    private final RentalServiceImpl rentalService;
 
     @Override
     public boolean existsByUsername(String username) {
@@ -104,14 +102,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void delete(Long userID) {
-        List<Rental> userRentals = rentalService.findByUserId(userID);
-
-        if(!userRentals.isEmpty()){
-            for (Rental rentalItem : userRentals){
-                rentalService.delete(rentalItem.getId());
-            }
-        }
-
         userRepository.deleteById(userID);
     }
 

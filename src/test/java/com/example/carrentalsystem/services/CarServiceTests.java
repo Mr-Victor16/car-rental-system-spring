@@ -19,7 +19,6 @@ public class CarServiceTests {
     private BrandRepository brandRepository;
     private CarModelRepository carModelRepository;
     private CarImageRepository carImageRepository;
-    private FuelServiceImpl fuelTypeService;
     private FuelTypeRepository fuelTypeRepository;
     private CarService carService;
 
@@ -30,8 +29,7 @@ public class CarServiceTests {
         carModelRepository = mock(CarModelRepository.class);
         carImageRepository = mock(CarImageRepository.class);
         fuelTypeRepository = mock(FuelTypeRepository.class);
-        fuelTypeService = new FuelServiceImpl(fuelTypeRepository);
-        carService = new CarServiceImpl(carRepository, brandRepository, carModelRepository, carImageRepository, fuelTypeService);
+        carService = new CarServiceImpl(carRepository, brandRepository, carModelRepository, carImageRepository, fuelTypeRepository);
     }
 
     //void changeImage(Long carID, MultipartFile file) throws IOException;
@@ -163,7 +161,7 @@ public class CarServiceTests {
         when(carModelRepository.findByName(carRequest.getModel())).thenReturn(model);
 
         FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_DIESEL);
-        when(fuelTypeService.findById(1L)).thenReturn(Optional.of(fuelType));
+        when(fuelTypeRepository.findById(1L)).thenReturn(Optional.of(fuelType));
 
         CarImage carImage = new CarImage(1L, "image.jpg".getBytes());
         when(carImageRepository.findById(1L)).thenReturn(Optional.of(carImage));
@@ -187,7 +185,7 @@ public class CarServiceTests {
         when(carModelRepository.findByName(carRequest.getModel())).thenReturn(model);
 
         FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_DIESEL);
-        when(fuelTypeService.findById(1L)).thenReturn(Optional.of(fuelType));
+        when(fuelTypeRepository.findById(1L)).thenReturn(Optional.of(fuelType));
 
         CarImage carImage = new CarImage(1L, "image.jpg".getBytes());
         when(carImageRepository.findById(1L)).thenReturn(Optional.of(carImage));
@@ -211,7 +209,7 @@ public class CarServiceTests {
         when(carModelRepository.findByName(carRequest.getModel())).thenReturn(null);
 
         FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_DIESEL);
-        when(fuelTypeService.findById(1L)).thenReturn(Optional.of(fuelType));
+        when(fuelTypeRepository.findById(1L)).thenReturn(Optional.of(fuelType));
 
         CarImage carImage = new CarImage(1L, "image.jpg".getBytes());
         when(carImageRepository.findById(1L)).thenReturn(Optional.of(carImage));
@@ -236,7 +234,7 @@ public class CarServiceTests {
         when(carModelRepository.findByName(carRequest.getModel())).thenReturn(model);
 
         FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_DIESEL);
-        when(fuelTypeService.findById(1L)).thenReturn(Optional.of(fuelType));
+        when(fuelTypeRepository.findById(1L)).thenReturn(Optional.of(fuelType));
 
         when(carImageRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -280,7 +278,7 @@ public class CarServiceTests {
         FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_DIESEL);
         Car car = new Car(brand, carModel, 2020, 20000, fuelType, 120, "2.0L", 25000, true, null);
 
-        when(fuelTypeService.findById(1L)).thenReturn(Optional.of(fuelTypeRequest));
+        when(fuelTypeRepository.findById(1L)).thenReturn(Optional.of(fuelTypeRequest));
         when(carRepository.getCarById(carID)).thenReturn(car);
         when(carRepository.save(any(Car.class))).thenReturn(car);
         when(carModelRepository.findByName(carRequest.getModel())).thenReturn(carModelRequest);
@@ -323,7 +321,7 @@ public class CarServiceTests {
         FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_DIESEL);
         Car car = new Car(brand, carModel, 2020, 20000, fuelType, 120, "2.0L", 25000, true, null);
 
-        when(fuelTypeService.findById(1L)).thenReturn(Optional.of(fuelTypeRequest));
+        when(fuelTypeRepository.findById(1L)).thenReturn(Optional.of(fuelTypeRequest));
         when(carRepository.getCarById(carID)).thenReturn(car);
         when(carRepository.save(any(Car.class))).thenReturn(car);
         when(carModelRepository.findByName(carRequest.getModel())).thenReturn(carModelRequest);

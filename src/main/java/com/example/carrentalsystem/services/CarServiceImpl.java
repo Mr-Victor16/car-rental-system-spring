@@ -3,10 +3,7 @@ package com.example.carrentalsystem.services;
 import com.example.carrentalsystem.models.*;
 import com.example.carrentalsystem.payload.request.AddCarRequest;
 import com.example.carrentalsystem.payload.request.EditCarRequest;
-import com.example.carrentalsystem.repositories.BrandRepository;
-import com.example.carrentalsystem.repositories.CarImageRepository;
-import com.example.carrentalsystem.repositories.CarModelRepository;
-import com.example.carrentalsystem.repositories.CarRepository;
+import com.example.carrentalsystem.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +20,7 @@ public class CarServiceImpl implements CarService {
     private final BrandRepository brandRepository;
     private final CarModelRepository carModelRepository;
     private final CarImageRepository carImageRepository;
-    private final FuelServiceImpl fuelService;
+    private final FuelTypeRepository fuelTypeRepository;
 
     @Override
     public List<Car> findAvailableCars() {
@@ -59,7 +56,7 @@ public class CarServiceImpl implements CarService {
         Brand brand = addBrand(carRequest.getBrand());
         CarModel model = addModel(carRequest.getModel());
 
-        FuelType fuelType = fuelService.findById(carRequest.getFuelType()).orElseThrow(() -> new RuntimeException("Error: Fuel type is not found."));
+        FuelType fuelType = fuelTypeRepository.findById(carRequest.getFuelType()).orElseThrow(() -> new RuntimeException("Error: Fuel type is not found."));
         CarImage carImage = carImageRepository.findById(1L).orElseThrow(() -> new RuntimeException("Error: Car image is not found"));
 
         carRepository.save(new Car(
@@ -148,7 +145,7 @@ public class CarServiceImpl implements CarService {
         }
 
         if(!carRequest.getFuelType().equals(car.getFuelType().getId())){
-            car.setFuelType(fuelService.findById(carRequest.getFuelType())
+            car.setFuelType(fuelTypeRepository.findById(carRequest.getFuelType())
                     .orElseThrow(() -> new RuntimeException("Error: Fuel type is not found.")));
         }
 

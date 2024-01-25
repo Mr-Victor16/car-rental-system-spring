@@ -41,8 +41,7 @@ public class UserServiceTests {
         jwtUtils = mock(JWTUtils.class);
         authenticationManager = mock(AuthenticationManager.class);
         rentalRepository = mock(RentalRepository.class);
-        RentalServiceImpl rentalService = new RentalServiceImpl(rentalRepository, null, null, userService, null);
-        userService = new UserServiceImpl(userRepository, jwtUtils, authenticationManager, roleRepository, passwordEncoder, rentalService);
+        userService = new UserServiceImpl(userRepository, jwtUtils, authenticationManager, roleRepository, passwordEncoder);
     }
 
     //Set<Role> setRole(Set<String> stringRoles);
@@ -109,7 +108,7 @@ public class UserServiceTests {
         Long userID = 1L;
 
         Role oldRole = new Role(RoleEnum.ROLE_ADMIN);
-        User existingUser = new User(userID,"username", "email@email.com", "password", oldRole);
+        User existingUser = new User(userID,"username", "email@email.com", "password", oldRole, Collections.emptyList());
         when(userRepository.findById(userID)).thenReturn(Optional.of(existingUser));
 
         Role newRole = new Role(RoleEnum.ROLE_USER);
@@ -132,7 +131,7 @@ public class UserServiceTests {
         Long userID = 1L;
 
         Role oldRole = new Role(RoleEnum.ROLE_USER);
-        User existingUser = new User(userID,"username", "email@email.com", "password", oldRole);
+        User existingUser = new User(userID,"username", "email@email.com", "password", oldRole, Collections.emptyList());
         when(userRepository.findById(userID)).thenReturn(Optional.of(existingUser));
 
         Role newRole = new Role(RoleEnum.ROLE_ADMIN);
@@ -233,7 +232,7 @@ public class UserServiceTests {
         when(jwtUtils.generateJwtToken(authentication)).thenReturn(token);
 
         Role role = new Role(RoleEnum.ROLE_USER);
-        User existingUser = new User(1L, "username", "user@email.com", "encodedPassword", role);
+        User existingUser = new User(1L, "username", "user@email.com", "encodedPassword", role, Collections.emptyList());
         UserDetailsImpl userDetails = UserDetailsImpl.build(existingUser);
         when(authentication.getPrincipal()).thenReturn(userDetails);
 
@@ -260,13 +259,13 @@ public class UserServiceTests {
         rental2.setId(2L);
         List<Rental> userRentals = Arrays.asList(rental1, rental2);
 
-        when(rentalRepository.findByUserId(userID)).thenReturn(userRentals);
+        //when(rentalRepository.findByUserId(userID)).thenReturn(userRentals);
         when(rentalRepository.getReferenceById(1L)).thenReturn(rental1);
         when(rentalRepository.getReferenceById(2L)).thenReturn(rental2);
 
         userService.delete(userID);
 
-        verify(rentalRepository, times(2)).deleteById(any());
+        //verify(rentalRepository, times(2)).deleteById(any());
         verify(userRepository, times(1)).deleteById(userID);
     }
 
@@ -277,7 +276,7 @@ public class UserServiceTests {
         Long userID = 1L;
         List<Rental> userRentals = Collections.emptyList();
 
-        when(rentalRepository.findByUserId(userID)).thenReturn(userRentals);
+        //when(rentalRepository.findByUserId(userID)).thenReturn(userRentals);
 
         userService.delete(userID);
 

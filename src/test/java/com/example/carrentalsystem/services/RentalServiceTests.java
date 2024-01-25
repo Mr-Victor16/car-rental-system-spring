@@ -31,15 +31,14 @@ public class RentalServiceTests {
         rentalStatusService = new RentalStatusServiceImpl(rentalStatusRepository);
         UserRepository userRepository = mock(UserRepository.class);
         RoleRepository roleRepository = mock(RoleRepository.class);
-        userService = new UserServiceImpl(userRepository, null, null, roleRepository, null, null);
+        userService = new UserServiceImpl(userRepository, null, null, roleRepository, null);
         CarRepository carRepository = mock(CarRepository.class);
         BrandRepository brandRepository = mock(BrandRepository.class);
         CarModelRepository carModelRepository = mock(CarModelRepository.class);
         CarImageRepository carImageRepository = mock(CarImageRepository.class);
         FuelTypeRepository fuelTypeRepository = mock(FuelTypeRepository.class);
-        FuelServiceImpl fuelTypeService = new FuelServiceImpl(fuelTypeRepository);
-        carService = new CarServiceImpl(carRepository, brandRepository, carModelRepository, carImageRepository, fuelTypeService);
-        rentalService = new RentalServiceImpl(rentalRepository, statusHistoryRepository, rentalStatusService, userService, carService);
+        carService = new CarServiceImpl(carRepository, brandRepository, carModelRepository, carImageRepository, fuelTypeRepository);
+        rentalService = new RentalServiceImpl(rentalRepository, statusHistoryRepository, userRepository, carRepository, rentalStatusRepository);
     }
 
     //void changeStatus(Long statusID, Long rentalID);
@@ -62,7 +61,7 @@ public class RentalServiceTests {
         Long statusID = 1L;
         Long rentalID = 2L;
 
-        Rental rental = new Rental(new Car(), new User(), LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
+        Rental rental = new Rental(new Car(), LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
         RentalStatus newRentalStatus = new RentalStatus(RentalStatusEnum.STATUS_ACCEPTED);
 
         when(rentalRepository.getReferenceById(rentalID)).thenReturn(rental);
@@ -132,7 +131,7 @@ public class RentalServiceTests {
     public void testDeleteRentalWithStatusHistory() {
         Long rentalId = 1L;
 
-        Rental rental = new Rental(new Car(), new User(), LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
+        Rental rental = new Rental(new Car(), LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
         List<StatusHistory> historyList = List.of(new StatusHistory(1L, new RentalStatus(RentalStatusEnum.STATUS_PENDING), LocalDate.now()));
         rental.setStatusHistory(historyList);
         
@@ -152,7 +151,7 @@ public class RentalServiceTests {
     public void testDeleteRentalWithoutStatusHistory() {
         Long rentalId = 1L;
 
-        Rental rental = new Rental(new Car(), new User(), LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
+        Rental rental = new Rental(new Car(), LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
 
         when(rentalService.findById(rentalId)).thenReturn(rental);
         when(rentalRepository.findById(rentalId)).thenReturn(Optional.of(rental));
@@ -172,7 +171,7 @@ public class RentalServiceTests {
         CarModel model = new CarModel(1L, "CarModel");
         FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_GASOLINE);
         Car car = new Car(1L, brand, model, 2022, 50000, fuelType, 200, "2.0L", 30000, true, null);
-        Rental rental = new Rental(car, new User(), LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
+        Rental rental = new Rental(car, LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
 
         EditCarRentalRequest request = new EditCarRentalRequest(LocalDate.of(2023,10,12), LocalDate.of(2023,10,15));
 
@@ -193,7 +192,7 @@ public class RentalServiceTests {
         CarModel model = new CarModel(1L, "CarModel");
         FuelType fuelType = new FuelType(FuelTypeEnum.FUEL_GASOLINE);
         Car car = new Car(1L, brand, model, 2022, 50000, fuelType, 200, "2.0L", 30000, true, null);
-        Rental rental = new Rental(car, new User(), LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
+        Rental rental = new Rental(car, LocalDate.of(2023, 1, 1), LocalDate.of(2026, 1, 10), LocalDate.now(), 2000L, new RentalStatus(RentalStatusEnum.STATUS_PENDING));
 
         EditCarRentalRequest request = new EditCarRentalRequest(LocalDate.of(2023,10,12), LocalDate.of(2023,10,12));
 

@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table( name = "users",
         uniqueConstraints = {
@@ -37,6 +40,10 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "user_id")
+    private List<Rental> rentals = new ArrayList<>();
 
     public User(String username, String email, String password){
         this.username = username;

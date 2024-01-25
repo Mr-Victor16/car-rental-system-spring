@@ -18,14 +18,14 @@ import java.util.List;
 public class RentalServiceImpl implements RentalService {
     private final RentalRepository rentalRepository;
     private final StatusHistoryRepository statusHistoryRepository;
-    private final RentalStatusServiceImpl rentalStatusService;
-    private final UserServiceImpl userService;
-    private final CarServiceImpl carService;
+    private final UserRepository userRepository;
+    private final CarRepository carRepository;
+    private final RentalStatusRepository rentalStatusRepository;
 
     @Override
     public void changeStatus(Long statusID, Long rentalID) {
         Rental rental = rentalRepository.getReferenceById(rentalID);
-        RentalStatus rentalStatus = rentalStatusService.findById(statusID).orElseThrow(() -> new RuntimeException("Error: Rental status is not found"));
+        RentalStatus rentalStatus = rentalStatusRepository.findById(statusID).orElseThrow(() -> new RuntimeException("Error: Rental status is not found"));
         rental.setRentalStatus(rentalStatus);
 
         StatusHistory newStatus = new StatusHistory(rentalStatus, LocalDate.now());
@@ -40,7 +40,7 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     public List<Rental> findByUserId(Long userID) {
-        return rentalRepository.findByUserId(userID);
+        return userRepository.getReferenceById(userID).getRentals();
     }
 
     @Override
@@ -70,19 +70,22 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     public void add(AddCarRentalRequest request) {
-        Car car = carService.getCarById(request.getCarID());
-        StatusHistory statusHistory = new StatusHistory(rentalStatusService.findByName(RentalStatusEnum.STATUS_PENDING), request.getAddDate());
+        Car car = carRepository.getReferenceById(request.getCarID());
+        StatusHistory statusHistory = new StatusHistory(rentalStatusRepository.findByName(RentalStatusEnum.STATUS_PENDING), request.getAddDate());
 
-        rentalRepository.save(new Rental(
-                car,
-                userService.getUserById(request.getUserID()),
-                request.getStartDate(),
-                request.getEndDate(),
-                request.getAddDate(),
-                (ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate())+1) * car.getPrice(),
-                rentalStatusService.findByName(RentalStatusEnum.STATUS_PENDING),
-                Collections.singletonList(addHistory(statusHistory))
-        ));
+        User user = userRepository.getReferenceById(request.getUserID());
+        user.getRentals().add(
+                new Rental(
+                        car,
+                        request.getStartDate(),
+                        request.getEndDate(),
+                        request.getAddDate(),
+                        (ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate())+1) * car.getPrice(),
+                        rentalStatusRepository.findByName(RentalStatusEnum.STATUS_PENDING),
+                        Collections.singletonList(addHistory(statusHistory))
+                )
+        );
+        userRepository.save(user);
     }
 
     @Override

@@ -10,8 +10,6 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     Car getCarById(Long carID);
 
-    List<Car> findByMileage(Integer mileage);
-
     long countByModelName(String name);
 
     long countByBrandName(String name);

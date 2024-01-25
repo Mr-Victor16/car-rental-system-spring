@@ -22,10 +22,6 @@ public class Rental {
     @JoinColumn(name = "car_id")
     private Car car;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
     private LocalDate startDate;
 
     private LocalDate endDate;
@@ -44,9 +40,8 @@ public class Rental {
     @JoinColumn(name = "rental_id")
     private List<StatusHistory> statusHistory = new ArrayList<>();
 
-    public Rental(Car car, User user, LocalDate startDate, LocalDate endDate, LocalDate addDate, Long price, RentalStatus rentalStatus) {
+    public Rental(Car car, LocalDate startDate, LocalDate endDate, LocalDate addDate, Long price, RentalStatus rentalStatus) {
         this.car = car;
-        this.user = user;
         this.startDate = startDate;
         this.endDate = endDate;
         this.addDate = addDate;
@@ -54,9 +49,8 @@ public class Rental {
         this.rentalStatus = rentalStatus;
     }
 
-    public Rental(Car car, User user, LocalDate startDate, LocalDate endDate, LocalDate addDate, Long price, RentalStatus rentalStatus, List<StatusHistory> statusHistory) {
+    public Rental(Car car, LocalDate startDate, LocalDate endDate, LocalDate addDate, Long price, RentalStatus rentalStatus, List<StatusHistory> statusHistory) {
         this.car = car;
-        this.user = user;
         this.startDate = startDate;
         this.endDate = endDate;
         this.addDate = addDate;
