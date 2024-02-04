@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  spring-mysqldb:
+    container_name: spring-mysqldb
+    image: mysql:8.0.27
+    restart: unless-stopped
+    environment:
+      DATABASE_HOST: docker-mysql
+      DATABASE_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: crs_database
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: root
+
+  spring-app:
+    container_name: spring-app
+    image: spring-backend:0.0.1
+    restart: on-failure
+    ports:
+      - '8080:8080'
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://spring-mysqldb:3306/crs_database?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_DRIVER-CLASS-NAME: com.mysql.cj.jdbc.Driver
+      SPRING_SQL.INIT.MODE: always
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MySQL8Dialect
+      SPRING_JPA_HIBERNATE_DDL-AUTO: create
+    depends_on:
+      - spring-mysqldb

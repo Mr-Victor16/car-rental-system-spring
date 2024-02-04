@@ -36,7 +36,7 @@ public class Rental {
     @JoinColumn(name = "rental_status_id")
     private RentalStatus rentalStatus;
 
-    @OneToMany
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "rental_id")
     private List<StatusHistory> statusHistory = new ArrayList<>();
 
