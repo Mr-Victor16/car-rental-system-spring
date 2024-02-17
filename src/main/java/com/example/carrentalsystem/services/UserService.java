@@ -34,7 +34,7 @@ public interface UserService {
 
     boolean verifyUserPassword(Long userID, String currentPassword);
 
-    void changeRole(Long userID, Boolean role);
+    void changeRole(Long userID, String role);
 
-    Role setRole(String stringRole);
+    Role findRole(String stringRole);
 }

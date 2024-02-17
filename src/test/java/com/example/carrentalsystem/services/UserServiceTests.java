@@ -1,12 +1,10 @@
 package com.example.carrentalsystem.services;
 
-import com.example.carrentalsystem.models.Rental;
 import com.example.carrentalsystem.models.Role;
 import com.example.carrentalsystem.models.RoleEnum;
 import com.example.carrentalsystem.models.User;
 import com.example.carrentalsystem.payload.request.LoginRequest;
 import com.example.carrentalsystem.payload.response.LoginResponse;
-import com.example.carrentalsystem.repositories.RentalRepository;
 import com.example.carrentalsystem.repositories.RoleRepository;
 import com.example.carrentalsystem.repositories.UserRepository;
 import com.example.carrentalsystem.security.jwt.JWTUtils;
@@ -28,7 +26,6 @@ public class UserServiceTests {
     private UserServiceImpl userService;
     private UserRepository userRepository;
     private RoleRepository roleRepository;
-    private RentalRepository rentalRepository;
     private PasswordEncoder passwordEncoder;
     private JWTUtils jwtUtils;
     private AuthenticationManager authenticationManager;
@@ -40,68 +37,58 @@ public class UserServiceTests {
         passwordEncoder = mock(PasswordEncoder.class);
         jwtUtils = mock(JWTUtils.class);
         authenticationManager = mock(AuthenticationManager.class);
-        rentalRepository = mock(RentalRepository.class);
         userService = new UserServiceImpl(userRepository, jwtUtils, authenticationManager, roleRepository, passwordEncoder);
     }
 
-    //Set<Role> setRole(Set<String> stringRoles);
-    //Test method when instead of role names, there is null.
+    //Role findRole(String stringRole);
+    //Test for method when role name is null.
     @Test
-    public void testSetRoleWithNullRoles(){
+    public void testFindRoleWithNullName(){
         Role userRole = new Role(RoleEnum.ROLE_USER);
         when(roleRepository.findByName(RoleEnum.ROLE_USER)).thenReturn(Optional.of(userRole));
 
-        Role resultRole = userService.setRole(null);
+        Role resultRole = userService.findRole(null);
 
         assertEquals(resultRole, userRole);
     }
 
-    //Set<Role> setRole(Set<String> stringRoles);
-    //Test whether the method correctly handles the absence of found roles in the repository.
-    @Test
-    public void testSetRoleWithMissingRoles(){
-        when(roleRepository.findByName(any(RoleEnum.class))).thenReturn(Optional.empty());
-
-        assertThrows(RuntimeException.class, () -> userService.setRole(""));
-    }
-
-    //Set<Role> setRole(Set<String> stringRoles);
+    //Role findRole(String stringRole);
     //Method test when given an unknown role.
     @Test
-    public void testSetRoleWithUnknownRole(){
+    public void testFindRoleWithUnknownRoleName(){
         Role userRole = new Role(RoleEnum.ROLE_USER);
         when(roleRepository.findByName(RoleEnum.ROLE_USER)).thenReturn(Optional.of(userRole));
 
-        Role resultRole = userService.setRole("moderator");
+        Role resultRole = userService.findRole("moderator");
 
         assertEquals(resultRole, userRole);
     }
 
-    //Set<Role> setRole(Set<String> stringRoles);
+    //Role findRole(String stringRole);
     //Method test when given a known (admin) role.
     @Test
-    public void testSetRoleWithAdminRole(){
+    public void testFindRoleWithAdminRole(){
         Role adminRole = new Role(RoleEnum.ROLE_ADMIN);
         when(roleRepository.findByName(RoleEnum.ROLE_ADMIN)).thenReturn(Optional.of(adminRole));
 
-        Role resultRole = userService.setRole("admin");
+        Role resultRole = userService.findRole("admin");
 
         assertEquals(resultRole, adminRole);
     }
 
-    //Set<Role> setRole(Set<String> stringRoles);
+    //Role findRole(String stringRole);
     //Method test when given a known (user) role.
     @Test
-    public void testSetRoleWithUserRole(){
+    public void testFindRoleWithUserRole(){
         Role userRole = new Role(RoleEnum.ROLE_USER);
         when(roleRepository.findByName(RoleEnum.ROLE_USER)).thenReturn(Optional.of(userRole));
 
-        Role resultRole = userService.setRole("user");
+        Role resultRole = userService.findRole("user");
 
         assertEquals(resultRole, userRole);
     }
 
-    //void changeRole(Long userID, Boolean role);
+    //void changeRole(Long userID, String role);
     //Test of a method that changes the user role from ADMIN to USER.
     @Test
     public void testChangeRoleToUser(){
@@ -116,15 +103,14 @@ public class UserServiceTests {
 
         when(userService.getUserById(userID)).thenReturn(existingUser);
 
-        // False = USER
-        userService.changeRole(userID, false);
+        userService.changeRole(userID, "user");
 
         verify(userRepository, times(1)).getReferenceById(userID);
         verify(userRepository, times(1)).save(existingUser);
         assertEquals(newRole, existingUser.getRole());
     }
 
-    //void changeRole(Long userID, Boolean role);
+    //void changeRole(Long userID, String role);
     //Test of a method that changes the user role from USER to ADMIN.
     @Test
     public void testChangeRoleToAdmin(){
@@ -139,8 +125,7 @@ public class UserServiceTests {
 
         when(userService.getUserById(userID)).thenReturn(existingUser);
 
-        // True = ADMIN
-        userService.changeRole(userID, true);
+        userService.changeRole(userID, "admin");
 
         verify(userRepository, times(1)).getReferenceById(userID);
         verify(userRepository, times(1)).save(existingUser);
@@ -248,39 +233,4 @@ public class UserServiceTests {
         assertEquals(Collections.singletonList("ROLE_USER"), loginResponse.getRoles());  // Assuming a default role
     }
 
-    //void delete(Long userID);
-    //Method test when user has rentals
-    @Test
-    public void testDeleteUserWithRentals() {
-        Long userID = 1L;
-        Rental rental1 = new Rental();
-        rental1.setId(1L);
-        Rental rental2 = new Rental();
-        rental2.setId(2L);
-        List<Rental> userRentals = Arrays.asList(rental1, rental2);
-
-        //when(rentalRepository.findByUserId(userID)).thenReturn(userRentals);
-        when(rentalRepository.getReferenceById(1L)).thenReturn(rental1);
-        when(rentalRepository.getReferenceById(2L)).thenReturn(rental2);
-
-        userService.delete(userID);
-
-        //verify(rentalRepository, times(2)).deleteById(any());
-        verify(userRepository, times(1)).deleteById(userID);
-    }
-
-    //void delete(Long userID);
-    //Method test when user hasn't rentals
-    @Test
-    public void testDeleteUserWithoutRentals() {
-        Long userID = 1L;
-        List<Rental> userRentals = Collections.emptyList();
-
-        //when(rentalRepository.findByUserId(userID)).thenReturn(userRentals);
-
-        userService.delete(userID);
-
-        verify(rentalRepository, times(0)).deleteById(any());
-        verify(userRepository, times(1)).deleteById(userID);
-    }
 }

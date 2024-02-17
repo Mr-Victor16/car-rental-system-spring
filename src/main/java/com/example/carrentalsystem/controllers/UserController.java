@@ -72,7 +72,7 @@ public class UserController {
 
     @PutMapping("{userID}/role/{role}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> changeRole(@PathVariable("userID") Long userID, @PathVariable("role") Boolean role){
+    public ResponseEntity<?> changeRole(@PathVariable("userID") Long userID, @PathVariable("role") String role){
         if(userService.existsById(userID)){
             userService.changeRole(userID, role);
             return new ResponseEntity<>("User role changed successfully", HttpStatus.OK);

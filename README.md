@@ -1,6 +1,6 @@
 # Car Rental System [Backend]
 Car Rental System is a project for a simple car rental system that was created for the purpose of learning how to create REST APIs. 
-This repository focuses on the backend part of the project.
+This repository focuses on the backend part of the project. The project was implemented in a layered architecture.
 
 The frontend for this project can be found in the repository - [car-rental-system-react](https://github.com/Mr-Victor16/car-rental-system-react)
 

@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
                 addUserRequest.getUsername(),
                 addUserRequest.getEmail(),
                 encoder.encode(addUserRequest.getPassword()),
-                setRole(addUserRequest.getRole())
+                findRole(addUserRequest.getRole())
         );
 
         userRepository.save(user);
@@ -111,18 +111,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void changeRole(Long userID, Boolean role) {
+    public void changeRole(Long userID, String role) {
         User user = getUserById(userID);
-
-        //Role: False - USER, True - ADMIN
-        if(role) user.setRole(setRole("admin"));
-        else user.setRole(setRole("user"));
-
+        user.setRole(findRole(role));
         userRepository.save(user);
     }
 
     @Override
-    public Role setRole(String stringRole) {
+    public Role findRole(String stringRole) {
         if(stringRole == null) {
             return roleRepository.findByName(RoleEnum.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
         } else {
