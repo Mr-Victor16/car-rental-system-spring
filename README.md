@@ -1,8 +1,9 @@
 # Car Rental System [Backend]
-Car Rental System is a project for a simple car rental system that was created for the purpose of learning how to create REST APIs. 
-This repository focuses on the backend part of the project. The project was implemented in a layered architecture.
+Car Rental System is a project showcasing a simple car rental system. 
+It has been designed using a layered architecture, enabling effective management of business logic, presentation and data access. 
 
-The frontend for this project can be found in the repository - [car-rental-system-react](https://github.com/Mr-Victor16/car-rental-system-react)
+This repository contains only the backend part of the project.\
+For the frontend part of the project, please visit the repository - [car-rental-system-react](https://github.com/Mr-Victor16/car-rental-system-react)
 
 ## Technologies used
 + Spring Framework, Spring Boot, Spring Security, Spring Data JPA
@@ -10,6 +11,7 @@ The frontend for this project can be found in the repository - [car-rental-syste
 + JWT
 + REST API
 + MySQL
++ Docker, Docker Compose
 
 ## Features
 + **General:**
@@ -31,33 +33,16 @@ The frontend for this project can be found in the repository - [car-rental-syste
 ![db_schema_v2](https://github.com/Mr-Victor16/car-rental-system-spring/assets/101965882/e0fe0a30-f19a-4c7d-a04b-96f251c79dc7)
 _The schema was created using Apache Workbench._
 
-## How to build the project on your own
+## Running the project with Docker Compose
 1. Clone this repository
    ```bash
     git clone https://github.com/Mr-Victor16/car-rental-system-spring
    ```
 2. Go to the folder with cloned repository
-3. Create an executable file for the project using Maven. Make sure you have Maven installed on your computer.
-   ```bash
-    mvn clean install
-   ```
-4. Build the Docker image with Maven
-   ```bash
-    docker build -t spring-backend:0.0.1 .
-   ```
-5. Run docker compose
+3. Run docker compose
    ```bash
     docker compose up
    ```
-
-## Configuration
-+ Database  
-Before starting the project/create an executable file for the project using Maven, you should create a database and a database user. The data of the created database and user must be entered into the **application.properties** file:
-```
-spring.datasource.url=jdbc:mysql://localhost:3306/<database_name>
-spring.datasource.username=<database_username>
-spring.datasource.password=<database_user_password>
-```
 
 ## Login details
 + Administrator  
