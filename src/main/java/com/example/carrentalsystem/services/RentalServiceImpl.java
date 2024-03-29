@@ -3,6 +3,7 @@ package com.example.carrentalsystem.services;
 import com.example.carrentalsystem.models.*;
 import com.example.carrentalsystem.payload.request.AddCarRentalRequest;
 import com.example.carrentalsystem.payload.request.EditCarRentalRequest;
+import com.example.carrentalsystem.payload.response.RentalResponse;
 import com.example.carrentalsystem.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service("rentalService")
 @RequiredArgsConstructor
@@ -34,13 +36,39 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
-    public List<Rental> findAll() {
-        return rentalRepository.findAll();
+    public List<RentalResponse> findAll() {
+        return userRepository.findAll().stream()
+                .flatMap(user -> user.getRentals().stream()
+                        .map(rental -> new RentalResponse(
+                                user,
+                                rental.getId(),
+                                rental.getCar(),
+                                rental.getStartDate(),
+                                rental.getEndDate(),
+                                rental.getAddDate(),
+                                rental.getPrice(),
+                                rental.getRentalStatus(),
+                                rental.getStatusHistory().stream().toList()
+                        )))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Rental> findByUserId(Long userID) {
-        return userRepository.getReferenceById(userID).getRentals();
+        User user = userRepository.getReferenceById(userID);
+
+        return user.getRentals().stream()
+                .map(rental -> new Rental(
+                        rental.getId(),
+                        rental.getCar(),
+                        rental.getStartDate(),
+                        rental.getEndDate(),
+                        rental.getAddDate(),
+                        rental.getPrice(),
+                        rental.getRentalStatus(),
+                        rental.getStatusHistory().stream().toList()
+                ))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -74,15 +102,16 @@ public class RentalServiceImpl implements RentalService {
         StatusHistory statusHistory = new StatusHistory(rentalStatusRepository.findByName(RentalStatusEnum.STATUS_PENDING), request.getAddDate());
 
         User user = userRepository.getReferenceById(request.getUserID());
-        user.getRentals().add(
-                new Rental(
-                        car,
-                        request.getStartDate(),
-                        request.getEndDate(),
-                        request.getAddDate(),
-                        (ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate())+1) * car.getPrice(),
-                        rentalStatusRepository.findByName(RentalStatusEnum.STATUS_PENDING),
-                        Collections.singletonList(addHistory(statusHistory))
+        user.getRentals().add(rentalRepository.save(
+                    new Rental(
+                            car,
+                            request.getStartDate(),
+                            request.getEndDate(),
+                            request.getAddDate(),
+                            (ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate())+1) * car.getPrice(),
+                            rentalStatusRepository.findByName(RentalStatusEnum.STATUS_PENDING),
+                            Collections.singletonList(addHistory(statusHistory))
+                    )
                 )
         );
         userRepository.save(user);

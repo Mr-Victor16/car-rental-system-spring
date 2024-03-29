@@ -54,7 +54,7 @@ public class RentalController {
                 return new ResponseEntity<>("Rental status changed", HttpStatus.OK);
             }
 
-            return new ResponseEntity<>("No rental status found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("No rental status found", HttpStatus.BAD_REQUEST);
         }
 
         return new ResponseEntity<>("No rental found", HttpStatus.NOT_FOUND);

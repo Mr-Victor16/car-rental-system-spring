@@ -4,6 +4,7 @@ import com.example.carrentalsystem.models.Rental;
 import com.example.carrentalsystem.models.RentalStatusEnum;
 import com.example.carrentalsystem.payload.request.AddCarRentalRequest;
 import com.example.carrentalsystem.payload.request.EditCarRentalRequest;
+import com.example.carrentalsystem.payload.response.RentalResponse;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -13,7 +14,7 @@ import java.util.List;
 public interface RentalService {
     void changeStatus(Long statusID, Long rentalID);
 
-    List<Rental> findAll();
+    List<RentalResponse> findAll();
 
     List<Rental> findByUserId(Long userID);
 

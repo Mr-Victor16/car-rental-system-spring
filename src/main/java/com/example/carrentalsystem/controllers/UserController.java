@@ -67,7 +67,7 @@ public class UserController {
             return new ResponseEntity<>("User password changed successfully", HttpStatus.OK);
         }
 
-        return new ResponseEntity<>("No user found", HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>("No user found", HttpStatus.NOT_FOUND);
     }
 
     @PutMapping("{userID}/role/{role}")
