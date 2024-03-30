@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void register(SignupRequest signUpRequest) {
-        User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()));
+        User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()), findRole("user"));
         userRepository.save(user);
     }
 

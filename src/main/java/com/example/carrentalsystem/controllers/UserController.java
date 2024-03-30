@@ -28,9 +28,13 @@ public class UserController {
     @DeleteMapping("{userID}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable("userID") Long userID){
-        if(userService.existsById(userID)){
-            userService.delete(userID);
-            return new ResponseEntity<>("User removed successfully", HttpStatus.OK);
+        if(userID != 1) {
+            if (userService.existsById(userID)) {
+                userService.delete(userID);
+                return new ResponseEntity<>("User removed successfully", HttpStatus.OK);
+            }
+        } else {
+            return new ResponseEntity<>("Default administrator account cannot be deleted", HttpStatus.FORBIDDEN);
         }
 
         return new ResponseEntity<>("No user found", HttpStatus.NOT_FOUND);
@@ -73,9 +77,13 @@ public class UserController {
     @PutMapping("{userID}/role/{role}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> changeRole(@PathVariable("userID") Long userID, @PathVariable("role") String role){
-        if(userService.existsById(userID)){
-            userService.changeRole(userID, role);
-            return new ResponseEntity<>("User role changed successfully", HttpStatus.OK);
+        if(userID != 1){
+            if(userService.existsById(userID)){
+                userService.changeRole(userID, role);
+                return new ResponseEntity<>("User role changed successfully", HttpStatus.OK);
+            }
+        } else {
+            return new ResponseEntity<>("Role of the default administrator account cannot be changed", HttpStatus.FORBIDDEN);
         }
 
         return new ResponseEntity<>("No user found", HttpStatus.NOT_FOUND);

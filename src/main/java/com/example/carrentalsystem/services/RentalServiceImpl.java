@@ -7,10 +7,10 @@ import com.example.carrentalsystem.payload.response.RentalResponse;
 import com.example.carrentalsystem.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -86,8 +86,8 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
+    @Transactional
     public void delete(Long rentalID) {
-        deleteHistory(rentalID);
         rentalRepository.deleteById(rentalID);
     }
 
@@ -125,14 +125,6 @@ public class RentalServiceImpl implements RentalService {
     @Override
     public boolean existsByCarId(Long id) {
         return rentalRepository.existsByCarId(id);
-    }
-
-    private void deleteHistory(Long rentalID) {
-        List<StatusHistory> historyList = new ArrayList<>(findById(rentalID).getStatusHistory());
-
-        for (StatusHistory item : historyList) {
-            statusHistoryRepository.deleteById(item.getId());
-        }
     }
 
     private StatusHistory addHistory(StatusHistory status) {

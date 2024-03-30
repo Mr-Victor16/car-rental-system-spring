@@ -136,8 +136,6 @@ public class RentalServiceTests {
 
         rentalService.delete(rentalId);
 
-        verify(rentalRepository, times(1)).getReferenceById(rentalId);
-        verify(statusHistoryRepository, times(1)).deleteById(anyLong());
         verify(rentalRepository, times(1)).deleteById(rentalId);
     }
 
@@ -154,8 +152,6 @@ public class RentalServiceTests {
 
         rentalService.delete(rentalId);
 
-        verify(rentalRepository, times(1)).getReferenceById(rentalId);
-        verify(statusHistoryRepository, times(0)).deleteById(anyLong());
         verify(rentalRepository, times(1)).deleteById(rentalId);
     }
 

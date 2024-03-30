@@ -59,8 +59,11 @@ public class RepositoryInitializer {
 
             if(userRepository.findAll().isEmpty()){
                 Role adminRole = roleRepository.findByName(RoleEnum.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
-                User user = new User("admin", "admin@admin.pl", encoder.encode("admin"), adminRole);
+                User admin = new User("admin", "admin@admin.pl", encoder.encode("admin"), adminRole);
+                userRepository.save(admin);
 
+                Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                User user = new User("user", "user@user.pl", encoder.encode("password"), userRole);
                 userRepository.save(user);
             }
         };

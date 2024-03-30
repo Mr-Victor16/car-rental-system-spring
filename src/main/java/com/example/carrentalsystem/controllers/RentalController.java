@@ -39,12 +39,6 @@ public class RentalController {
         return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping("{rentalID}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<?> getRentalInfo(@PathVariable("rentalID") Long rentalID){
-        return ResponseEntity.ok(rentalService.findById(rentalID));
-    }
-
     @PutMapping("{rentalID}/status/{statusID}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> changeStatus(@PathVariable("rentalID") Long rentalID, @PathVariable("statusID") Long statusID){
