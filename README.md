@@ -3,8 +3,8 @@ Car Rental System is a simple system designed to meet the needs of companies ren
 
 It has been designed using a layered architecture, enabling effective management of business logic, presentation and data access. 
 
-This repository contains only the backend.
-Frontend of the project - [car-rental-system-react](https://github.com/Mr-Victor16/car-rental-system-react)
+**This repository contains only the backend.
+Frontend of the project - [car-rental-system-react](https://github.com/Mr-Victor16/car-rental-system-react)**
 
 ## Technologies used
 + Spring Framework, Spring Boot, Spring Security, Spring Data JPA
