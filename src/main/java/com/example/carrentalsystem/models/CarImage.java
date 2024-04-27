@@ -15,7 +15,7 @@ public class CarImage {
     private Long imageID;
 
     @Lob
-    @Column(columnDefinition="BLOB", nullable = false)
+    @Column(columnDefinition="MEDIUMBLOB", nullable = false)
     private byte[] fileContent;
 
     public CarImage(byte[] fileContent) {
