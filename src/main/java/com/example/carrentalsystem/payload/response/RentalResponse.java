@@ -1,9 +1,7 @@
 package com.example.carrentalsystem.payload.response;
 
-import com.example.carrentalsystem.models.Car;
 import com.example.carrentalsystem.models.RentalStatus;
 import com.example.carrentalsystem.models.StatusHistory;
-import com.example.carrentalsystem.models.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,9 +16,11 @@ import java.util.List;
 @Getter
 @Setter
 public class RentalResponse {
-    private User user;
+    private String username;
     private Long id;
-    private Car car;
+    private Integer carPrice;
+    private String carBrand;
+    private String carModel;
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDate addDate;

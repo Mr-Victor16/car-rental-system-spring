@@ -16,7 +16,7 @@ public interface RentalService {
 
     List<RentalResponse> findAll();
 
-    List<Rental> findByUserId(Long userID);
+    List<RentalResponse> findByUserId(Long userID);
 
     boolean existsById(Long rentalID);
 

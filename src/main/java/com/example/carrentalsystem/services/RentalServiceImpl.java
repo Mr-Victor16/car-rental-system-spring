@@ -40,9 +40,11 @@ public class RentalServiceImpl implements RentalService {
         return userRepository.findAll().stream()
                 .flatMap(user -> user.getRentals().stream()
                         .map(rental -> new RentalResponse(
-                                user,
+                                user.getUsername(),
                                 rental.getId(),
-                                rental.getCar(),
+                                rental.getCar().getPrice(),
+                                rental.getCar().getBrand().getName(),
+                                rental.getCar().getModel().getName(),
                                 rental.getStartDate(),
                                 rental.getEndDate(),
                                 rental.getAddDate(),
@@ -54,13 +56,16 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
-    public List<Rental> findByUserId(Long userID) {
+    public List<RentalResponse> findByUserId(Long userID) {
         User user = userRepository.getReferenceById(userID);
 
         return user.getRentals().stream()
-                .map(rental -> new Rental(
+                .map(rental -> new RentalResponse(
+                        user.getUsername(),
                         rental.getId(),
-                        rental.getCar(),
+                        rental.getCar().getPrice(),
+                        rental.getCar().getBrand().getName(),
+                        rental.getCar().getModel().getName(),
                         rental.getStartDate(),
                         rental.getEndDate(),
                         rental.getAddDate(),
