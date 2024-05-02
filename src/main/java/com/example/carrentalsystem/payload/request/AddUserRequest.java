@@ -18,12 +18,12 @@ public class AddUserRequest {
     private String username;
 
     @NotBlank
-    @Size(max = 50)
+    @Size(min = 5, max = 50)
     @Email
     private String email;
 
     @NotBlank
-    @Size(min = 6, max = 40)
+    @Size(min = 5, max = 120)
     private String password;
 
     private String role;
