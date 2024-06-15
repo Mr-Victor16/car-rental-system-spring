@@ -8,6 +8,7 @@ Frontend of the project - [car-rental-system-react](https://github.com/Mr-Victor
 
 ## Technologies used
 + Spring Framework, Spring Boot, Spring Security, Spring Data JPA
++ JUnit, Mockito
 + Lombok
 + JWT
 + REST API
