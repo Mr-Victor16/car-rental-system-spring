@@ -49,8 +49,9 @@ _The schema was created using Apache Workbench._
 ## Login details
 + Administrator  
   **Username:** admin  
-  **Password:** admin  
-<br />
+  **Password:** admin
+  
 + User  
   **Username:** user  
   **Password:** password
+  
